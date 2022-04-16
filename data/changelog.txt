@@ -1,0 +1,9 @@
+------------------------------0.9.0------------------------------
+-Added buttons to Trivia. More questions coming soon.
+-Combined groupdua and dua to a single command.
+-Added descriptions to most commands.
+-Added a Quran browsing feature to the.
+-Added recite button when searching for a single ayah. This will be expanded and combined with the browse command.
+-Added aliases to some commands.
+-Working on README.md
+-Bug fixes.

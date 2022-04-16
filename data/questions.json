@@ -1,0 +1,114 @@
+{
+  "0": {
+    "question": "When was the Prophet Muhammad PBUH born?",
+    "a": "560 CE",
+    "b": "571 CE",
+    "c": "580 CE",
+    "d": "632 CE",
+    "correct_answer": "b"
+  },
+  "1": {
+    "question": "Who was the first muezzin in Islam?",
+    "a": "Bilal Ibn Rabah",
+    "b": "Abu Bakr As Siddiq",
+    "c": "Umar Ibn Al-Khattab",
+    "d": "Hussain Ibn Ali",
+    "correct_answer": "a"
+  },
+  "2": {
+    "question": "Which of the following is not a holy book in Islam?",
+    "a": "The Injil",
+    "b": "The Zabur",
+    "c": "The Torah",
+    "d": "The Avesta",
+    "correct_answer": "d"
+  },
+  "3": {
+    "question": "What time can the nawafil prayer Tahajjud be fulfilled?",
+    "a": "After Sunrise",
+    "b": "Right Before Sunset",
+    "c": "On Friday After Jumu'ah",
+    "d": "During The Last 3rd Of The Night Before Dawn",
+    "correct_answer": "d"
+  },
+  "4": {
+    "question": "Who is known to be as the 'Men Of The Elephant?",
+    "a": "Kisra",
+    "b": "Abraha",
+    "c": "Abdul Muttalib",
+    "d": "George Washington",
+    "correct_answer": "b"
+  },
+  "5": {
+    "question": "Who brought idol worship to Arabia?",
+    "a": "Amr bin Luhai",
+    "b": "Amr Al-Jurhumi",
+    "c": "Jabala bin Al-Aihum",
+    "d": "Barack Obama",
+    "correct_answer": "a"
+  },
+  "6": {
+    "question": "Who served as the Prophet's nursemaid upon his mothers death?",
+    "a": "Umm Salama",
+    "b": "Amina",
+    "c": "Umm Aiman",
+    "d": "Oprah",
+    "correct_answer": "c"
+  },
+  "7": {
+    "question": "Which angel came down and cut open the chest of Prophet Muhammad, upon whom be peace, and took out his heart in order to wash it with the water of ZamZam?",
+    "a": "Jibreel Alayhi Salam",
+    "b": "Mikhail Alayhi Salam",
+    "c": "Israfil Alayhi Salam",
+    "d": "Ridwhan Alayhi Salam",
+    "correct_answer": "a"
+  },
+  "8": {
+    "question": "Which one of the following battles was not fought in Islamic history?",
+    "a": "Battle of Badr",
+    "b": "Battle of Uhud",
+    "c": "Battle of Abyssinia",
+    "d": "Battle of the Trench",
+    "correct_answer": "c"
+  },
+  "9": {
+    "question": "Who was the second Caliph?",
+    "a": "Abu Bakr As-Siddiq",
+    "b": "Umar Ibn Al-Khattab",
+    "c": "Uthman ibn Affan",
+    "d": "Ali ibn Abī Ṭalib",
+    "correct_answer": "b"
+  },
+  "10": {
+    "question": "Which prophet was swallowed by a whale?",
+    "a": "Yunus Alayhi Salam",
+    "b": "Yaqub Alayhi Salam",
+    "c": "Sulayman Alayhi Salam",
+    "d": "Musa Alayhi Salam",
+    "correct_answer": "a"
+  },
+  "11": {
+    "question": "Where is Allah?",
+    "a": "In my heart",
+    "b": "In the heavens",
+    "c": "Above his throne",
+    "d": "Everywhere",
+    "correct_answer": "c"
+  },
+  "12": {
+    "question": "What is the meaning of the 'la illaha illallah'?",
+    "a": "There is no god but god",
+    "b": "There is no god but Allah",
+    "c": "There is no real diety other than Allah",
+    "d": "There is none worthy of worship in truth, except Allah.",
+    "correct_answer": "d"
+  },
+  "13": {
+    "question": "What does 'Dajjal' mean?",
+    "a": "The deceiver",
+    "b": "The destroyer",
+    "c": "The chicken",
+    "d": "The killer",
+    "correct_answer": "a"
+  }
+}
