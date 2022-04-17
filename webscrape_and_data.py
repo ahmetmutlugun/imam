@@ -7,6 +7,9 @@ import discord
 import requests
 from discord.ext import commands
 
+from discord.commands import \
+    slash_command, Option
+
 errorText = "No prayer time found for your location. Please set a new location using imam location <city>"
 
 f = open('data/config.json', 'r+')
@@ -131,10 +134,10 @@ def create_user(userid: str, imam: int, tovbe: int, city: str, elham: int, utc_o
 
 class Webscraping2(commands.Cog):
     def __init__(self, bot):
-        self.bot = bot
+        self.client = bot
         self._last_member = None
 
-    @commands.command(aliases=['loc'], brief='Set your location for prayer commands. imam location <city>')
+    @slash_command(name='location', description="Set your location for prayer commands. imam location <city>")
     async def location(self, ctx, user_loc: str):
         """
         Changes user's location to their parameter specified location
@@ -193,7 +196,7 @@ class Webscraping2(commands.Cog):
         else:
             await ctx.send("Please format as \"imam location City,CountryCode\"")
 
-    @commands.command(brief='Displays the fajr time ', aliases=['sahur', 'dawn', 'sabah', 'morning'])
+    @slash_command(name='fajr', description="Displays the fajr time.")
     async def fajr(self, ctx):
         """
         Returns fajr prayer time using web-scrape()'s prayer_times
@@ -209,7 +212,7 @@ class Webscraping2(commands.Cog):
         else:
             await ctx.send("Fajr/Sahur is at " + str(time['Fajr']) + " for " + city)
 
-    @commands.command(brief='Displays the dhuhr time ', aliases=['ogle', 'noon', 'dhuhar'])
+    @slash_command(name='dhuhr', description="Displays the dhuhr time.")
     async def dhuhr(self, ctx):
         """
         Returns dhuhr prayer time using web-scrape()'s prayer_times
@@ -225,7 +228,7 @@ class Webscraping2(commands.Cog):
         else:
             await ctx.send("Dhuhr is at " + str(time['Dhuhr']) + " for " + city)
 
-    @commands.command(brief='Displays the asr time', aliases=['ikindi', 'afternoon'])
+    @slash_command(name='asr', description="Displays the Asr time.")
     async def asr(self, ctx):
         """
         Returns asr prayer time using web-scrape()'s prayer_times
@@ -241,7 +244,7 @@ class Webscraping2(commands.Cog):
         else:
             await ctx.send("Asr is at " + str(time['Asr']) + " for " + city)
 
-    @commands.command(brief='Displays the maghrib time', aliases=['iftar', 'aksam', 'evening'])
+    @slash_command(name='maghrib', description="Displays the maghrib time.")
     async def maghrib(self, ctx):
         """
         Returns maghrib prayer time using web-scrape()'s prayer_times
@@ -257,7 +260,7 @@ class Webscraping2(commands.Cog):
         else:
             await ctx.send("Maghrib is at " + str(time['Maghrib']) + " for " + city)
 
-    @commands.command(brief='Displays the isha time', aliases=['yatsi', 'night'])
+    @slash_command(name='isha', description="Displays the isha time.")
     async def isha(self, ctx):
         """
         Returns isha prayer time using web-scrape()'s prayer_times
@@ -273,8 +276,7 @@ class Webscraping2(commands.Cog):
         else:
             await ctx.send("Isha is at " + str(time['Isha']) + " for " + city)
 
-    @commands.command(brief='prints out all prayer times',
-                      aliases=['pt', 'prayertimes', 'ptimes', 'prayer', 'namaz', 'salah'])
+    @slash_command(name='prayer_times', description="Displays all prayer times.")
     async def prayer_times(self, ctx):
         """
         Returns all prayer times as a string using web-scrape()
@@ -300,7 +302,7 @@ class Webscraping2(commands.Cog):
             embed.add_field(name=str(key) + ":", value=str(prayer_times[key]))
         await ctx.send(embed=embed)
 
-    @commands.command(brief='Sends the current prayer time', aliases=['pn', 'prayernow', 'prayercurr', 'pcurr'])
+    @slash_command(name='prayer_now', description="Displays the current prayer time.")
     async def pnow(self, ctx):
         """
         Returns the current and next prayer times, and the time left until the next prayertime
@@ -361,5 +363,6 @@ class Webscraping2(commands.Cog):
             mins = 59 - mins
 
         # Return everything
+        await ctx.send("Warning: This command is under development. Please double check prayer times.")
         await ctx.send(
             f"The current prayer for {city} is {pnow}. There are {hours} hours and {mins} minutes until {pnext}.")

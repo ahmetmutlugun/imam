@@ -4,10 +4,15 @@ import discord
 import asyncio
 import requests
 import textwrap
+import logging
+
+from discord.commands import \
+    slash_command, Option
 
 from discord.ext import commands
-from discord_slash.utils import manage_components
-from discord_slash.model import ButtonStyle
+import discord
+import requests
+from discord.ext import commands
 
 f = open('data/config.json', 'r+')
 config = json.load(f)
@@ -53,8 +58,8 @@ def create_hadith_embed(number, collection, hadith, page):
 
 
 class Prayer(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, client):
+        self.client = client
         self._last_member = None
 
     # TODO:
@@ -63,94 +68,89 @@ class Prayer(commands.Cog):
     #  - Add tahajjud count
     #  - Add quran page count
 
-    @commands.command(brief='Sends a hadith.', aliases=['sunnah', 'sunnet', 'hadis'], description='Sends a random '
-                                                                                                  'hadith by default.'
-                                                                                                  ' use imam hadith ['
-                                                                                                  'colelction] ['
-                                                                                                  'number] to get a '
-                                                                                                  'specific hadith.')
+    @slash_command(name='hadith', description="Sends a hadith")
     async def hadith(self, ctx, collection: str = "random", number: int = None):
+        await ctx.send("This command is under construction!")
+        # if collection == "random":
+        #     # Send request to sunnah.com api
+        #     r = requests.get(url="https://api.sunnah.com/v1/hadiths/random",
+        #                      headers={"X-API-Key": config['sunnah']})
+        #     data = r.json()
+        #     final_hadith = process_hadith(data)
+        #     final_wrapped = textwrap.wrap(final_hadith, 1024)
+        #     final_collection = data["collection"].capitalize()
+        #     final_number = data["hadithNumber"]
+        #
+        # elif collection.lower() not in collection_names:
+        #     await ctx.send(
+        #         f"Your collection is not supported. Please choose from the following collections: \n {collections_str}")
+        #     return
+        #
+        # elif number is None:
+        #     await ctx.send(
+        #         f"Please provide a collection name and number from the following "
+        #         f"collections: \n {collections_str}\n ")
+        #     return
+        #
+        # else:
+        #     try:
+        #         r = requests.get(url=f"https://api.sunnah.com/v1/collections/{collection}/hadiths/{number}",
+        #                          headers={"X-API-Key": config['sunnah']})
+        #         data = r.json()
+        #         final_hadith = process_hadith(data)
+        #         final_wrapped = textwrap.wrap(final_hadith, 1024)
+        #         final_collection = collection.capitalize()
+        #         final_number = number
+        #     except Exception as e:
+        #         await ctx.send(
+        #             f"Hadith not found. If you are sure {collection.capitalize()} {number} "
+        #             f"exists, contact sharpie#0317")
+        #         return
+        # if len(final_wrapped) >= 2:
+        #     buttons = [
+        #         manage_components.create_button(style=ButtonStyle.grey, label="Previous Page",
+        #                                         custom_id="hadith_previous_page"),
+        #         manage_components.create_button(style=ButtonStyle.green, label="Next Page",
+        #                                         custom_id="hadith_next_page")
+        #     ]
+        #     action_row = manage_components.create_actionrow(*buttons)
+        #
+        #     await ctx.send(embed=create_hadith_embed(final_number, final_collection, final_wrapped[0], 1),
+        #                    components=[action_row])
+        #
+        #     page = 0
+        #     max_pages = len(final_wrapped) - 1
+        #
+        #     while True:
+        #         try:
+        #             button_ctx = await manage_components.wait_for_component(self.bot, components=action_row,
+        #                                                                     timeout=600)
+        #             if button_ctx.custom_id == 'hadith_previous_page':
+        #                 if page > 0:
+        #                     page -= 1
+        #                 else:
+        #                     page = max_pages
+        #                 await button_ctx.edit_origin(
+        #                     embed=create_hadith_embed(final_number, final_collection, final_wrapped[page], page + 1))
+        #             elif button_ctx.custom_id == 'hadith_next_page':
+        #                 if page < max_pages:
+        #                     page += 1
+        #                 else:
+        #                     page = 0
+        #                 await button_ctx.edit_origin(
+        #                     embed=create_hadith_embed(final_number, final_collection, final_wrapped[page], page + 1))
+        #
+        #         except asyncio.TimeoutError:
+        #             break
+        #
+        # else:
+        #     await ctx.send(embed=create_hadith_embed(final_number, final_collection, final_hadith, 1))
 
-        if collection == "random":
-            # Send request to sunnah.com api
-            r = requests.get(url="https://api.sunnah.com/v1/hadiths/random",
-                             headers={"X-API-Key": config['sunnah']})
-            data = r.json()
-            final_hadith = process_hadith(data)
-            final_wrapped = textwrap.wrap(final_hadith, 1024)
-            final_collection = data["collection"].capitalize()
-            final_number = data["hadithNumber"]
-
-        elif collection.lower() not in collection_names:
-            await ctx.send(
-                f"Your collection is not supported. Please choose from the following collections: \n {collections_str}")
-            return
-
-        elif number is None:
-            await ctx.send(
-                f"Please provide a collection name and number from the following "
-                f"collections: \n {collections_str}\n ")
-            return
-
-        else:
-            try:
-                r = requests.get(url=f"https://api.sunnah.com/v1/collections/{collection}/hadiths/{number}",
-                                 headers={"X-API-Key": config['sunnah']})
-                data = r.json()
-                final_hadith = process_hadith(data)
-                final_wrapped = textwrap.wrap(final_hadith, 1024)
-                final_collection = collection.capitalize()
-                final_number = number
-            except Exception as e:
-                await ctx.send(
-                    f"Hadith not found. If you are sure {collection.capitalize()} {number} "
-                    f"exists, contact sharpie#0317")
-                return
-        if len(final_wrapped) >= 2:
-            buttons = [
-                manage_components.create_button(style=ButtonStyle.grey, label="Previous Page",
-                                                custom_id="hadith_previous_page"),
-                manage_components.create_button(style=ButtonStyle.green, label="Next Page",
-                                                custom_id="hadith_next_page")
-            ]
-            action_row = manage_components.create_actionrow(*buttons)
-
-            await ctx.send(embed=create_hadith_embed(final_number, final_collection, final_wrapped[0], 1),
-                           components=[action_row])
-
-            page = 0
-            max_pages = len(final_wrapped) - 1
-
-            while True:
-                try:
-                    button_ctx = await manage_components.wait_for_component(self.bot, components=action_row,
-                                                                            timeout=600)
-                    if button_ctx.custom_id == 'hadith_previous_page':
-                        if page > 0:
-                            page -= 1
-                        else:
-                            page = max_pages
-                        await button_ctx.edit_origin(
-                            embed=create_hadith_embed(final_number, final_collection, final_wrapped[page], page + 1))
-                    elif button_ctx.custom_id == 'hadith_next_page':
-                        if page < max_pages:
-                            page += 1
-                        else:
-                            page = 0
-                        await button_ctx.edit_origin(
-                            embed=create_hadith_embed(final_number, final_collection, final_wrapped[page], page + 1))
-
-                except asyncio.TimeoutError:
-                    break
-
-        else:
-            await ctx.send(embed=create_hadith_embed(final_number, final_collection, final_hadith, 1))
-
-    @commands.command(brief='Sends a besmele', aliases=['basmala', 'bismillah'])
+    @slash_command(name='besmele', description="Sends a besmele.")
     async def besmele(self, ctx):
         await ctx.send(f'Bismillâhirrahmânirrahîm')
 
-    @commands.command(brief='[@mention] pray for a user or a group of users.')
+    @slash_command(name='pray', description="[@mention] pray for a user or a group of users.")
     async def dua(self, ctx, user_: discord.Role or discord.Member):
         duas = [f'O Allah, Have mercy on {user_.mention} ',
                 f'O Allah, Bless {user_.mention} and his family ',
@@ -161,14 +161,12 @@ class Prayer(commands.Cog):
                 ]
         await ctx.send(f'{random.choice(duas)}')
 
-    @commands.command(brief='Sends salawat upon the Prophet', aliases=['salat'])
+    @slash_command(name='salawat', description="Salawat upon the Prophet")
     async def salawat(self, ctx):
         await ctx.send(f'O Allah! send Your blessing upon Muhammad and the progeny of Muhammad')
 
-    @commands.command(brief='Sends one of Allah\'s names. Chooses randomly if no number is specified.',
-                      aliases=['asm', 'asma-ulHusna', 'Allah\'s names', 'God\'s names', 'names of Allah', 'names of God', 'asma ul husna'])
+    @slash_command(name='esma', description="Sends one of Allah\'s names. Chooses randomly if no number is specified.")
     async def esma(self, ctx, number: int = None):
-
         names = [f'ar-Rahman (The Most Gracious)', f'ar-Rahim (The Most Merciful)',
                  f'al-Malik (The Sovereign)', f'al-Quddus (The Holy)', f'as-Salam (The Giver of Peace)',
                  f'al-Mu\'min (The Granter of Security)', f'al-Muhaymin (The Controller)', f'al-Aziz(The Almighty)',
