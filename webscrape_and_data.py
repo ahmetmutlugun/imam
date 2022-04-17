@@ -158,7 +158,7 @@ class Webscraping2(commands.Cog):
             with open('data/countyCodes.json', 'r+') as cc:
                 countryData = json.load(cc)
             if country not in countryData:
-                await ctx.send("Please enter a valid country code.")
+                await ctx.respond("Please enter a valid country code.")
                 return
 
             # Adds spaces in the city name: i.e. SanJose is now San Jose
@@ -176,7 +176,7 @@ class Webscraping2(commands.Cog):
             # Get the local time offset for the specified city
             utc_offset = calc_local_time_offset(formatted_city, country)
             if utc_offset is None:
-                await ctx.send("Your location is invalid. Please use \"imam location <CityName>,<CountryName>\"")
+                await ctx.respond("Your location is invalid. Please use \"imam location <CityName>,<CountryName>\"")
                 return
 
             try:
@@ -191,10 +191,10 @@ class Webscraping2(commands.Cog):
             except Exception as e:
                 # logging.error(e)
                 print(e)
-            await ctx.send(
+            await ctx.respond(
                 "User location changed to: \nCity: " + formatted_city + "\nCountry: " + countryData[country])
         else:
-            await ctx.send("Please format as \"imam location City,CountryCode\"")
+            await ctx.respond("Please format as \"imam location City,CountryCode\"")
 
     @slash_command(name='fajr', description="Displays the fajr time.")
     async def fajr(self, ctx):
@@ -208,9 +208,9 @@ class Webscraping2(commands.Cog):
         country = location[1].replace("_", " ")
         time = web_scrape(city, country)
         if time is None:
-            await ctx.send(errorText)
+            await ctx.respond(errorText)
         else:
-            await ctx.send("Fajr/Sahur is at " + str(time['Fajr']) + " for " + city)
+            await ctx.respond("Fajr/Sahur is at " + str(time['Fajr']) + " for " + city)
 
     @slash_command(name='dhuhr', description="Displays the dhuhr time.")
     async def dhuhr(self, ctx):
@@ -224,9 +224,9 @@ class Webscraping2(commands.Cog):
         country = location[1].replace("_", " ")
         time = web_scrape(city, country)
         if time is None:
-            await ctx.send(errorText)
+            await ctx.respond(errorText)
         else:
-            await ctx.send("Dhuhr is at " + str(time['Dhuhr']) + " for " + city)
+            await ctx.respond("Dhuhr is at " + str(time['Dhuhr']) + " for " + city)
 
     @slash_command(name='asr', description="Displays the Asr time.")
     async def asr(self, ctx):
@@ -240,9 +240,9 @@ class Webscraping2(commands.Cog):
         country = location[1].replace("_", " ")
         time = web_scrape(city, country)
         if time is None:
-            await ctx.send(errorText)
+            await ctx.respond(errorText)
         else:
-            await ctx.send("Asr is at " + str(time['Asr']) + " for " + city)
+            await ctx.respond("Asr is at " + str(time['Asr']) + " for " + city)
 
     @slash_command(name='maghrib', description="Displays the maghrib time.")
     async def maghrib(self, ctx):
@@ -256,9 +256,9 @@ class Webscraping2(commands.Cog):
         country = location[1].replace("_", " ")
         time = web_scrape(city, country)
         if time is None:
-            await ctx.send(errorText)
+            await ctx.respond(errorText)
         else:
-            await ctx.send("Maghrib is at " + str(time['Maghrib']) + " for " + city)
+            await ctx.respond("Maghrib is at " + str(time['Maghrib']) + " for " + city)
 
     @slash_command(name='isha', description="Displays the isha time.")
     async def isha(self, ctx):
@@ -272,9 +272,9 @@ class Webscraping2(commands.Cog):
         country = location[1].replace("_", " ")
         time = web_scrape(city, country)
         if time is None:
-            await ctx.send(errorText)
+            await ctx.respond(errorText)
         else:
-            await ctx.send("Isha is at " + str(time['Isha']) + " for " + city)
+            await ctx.respond("Isha is at " + str(time['Isha']) + " for " + city)
 
     @slash_command(name='prayer_times', description="Displays all prayer times.")
     async def prayer_times(self, ctx):
@@ -300,7 +300,7 @@ class Webscraping2(commands.Cog):
         for key in prayer_times:
             string += str(key) + ": " + str(prayer_times[key]) + "\n"
             embed.add_field(name=str(key) + ":", value=str(prayer_times[key]))
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
 
     @slash_command(name='prayer_now', description="Displays the current prayer time.")
     async def pnow(self, ctx):
@@ -363,6 +363,6 @@ class Webscraping2(commands.Cog):
             mins = 59 - mins
 
         # Return everything
-        await ctx.send("Warning: This command is under development. Please double check prayer times.")
-        await ctx.send(
+        await ctx.respond("Warning: This command is under development. Please double check prayer times.")
+        await ctx.respond(
             f"The current prayer for {city} is {pnow}. There are {hours} hours and {mins} minutes until {pnext}.")

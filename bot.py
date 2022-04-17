@@ -53,32 +53,32 @@ async def on_ready():
 async def on_member_join(member):
     channel = member.guild.system_channel
     if channel is not None:
-        await channel.send('As-salamu alaykum {0.mention}.'.format(member))
+        await channel.respond('As-salamu alaykum {0.mention}.'.format(member))
 
 
 @client.slash_command(name='welcome', description="Welcome a user")
 async def welcome(self, ctx, *, member: discord.Member = None):
     member = member or ctx.author
     if self._last_member is None or self._last_member.id != member.id:
-        await ctx.send(f'As-salamu alaykum {member.mention}')
+        await ctx.respond(f'As-salamu alaykum {member.mention}')
     else:
-        await ctx.send(f'As-salamu alaykum {member.mention}')
+        await ctx.respond(f'As-salamu alaykum {member.mention}')
     self._last_member = member
 
 
 @client.slash_command(name='ping', description="Displays ping")
 async def _ping(ctx):  # Defines a new "context" (ctx) command called "ping."
-    await ctx.send(f"Pong! ({round(client.latency * 1000)}ms)")
+    await ctx.respond(f"Pong! ({round(client.latency * 1000)}ms)")
 
 
 @client.slash_command(name='takbeer', description="Takbeer!")
 async def takbeer(ctx):
-    await ctx.send("Allahuakbar")
+    await ctx.respond("Allahuakbar")
 
 
 @client.slash_command(name='dhikr', description="Sends a reminder")
 async def dhikr(ctx):
-    await ctx.send(
+    await ctx.respond(
         "Indeed, it is We (Allah) who created humankind and fully know what their souls whisper to them, and We are closer to "
         "them than their jugular vein (By His knowledge). (Qaf , ayah 16)")
 
@@ -108,15 +108,15 @@ async def meme(ctx):
                 embed.set_image(url=str(image_url))
                 embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                                           "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
-                await ctx.send(embed=embed)
+                await ctx.respond(embed=embed)
         except Exception:
-            await ctx.send('There was an error. Please try again.')
+            await ctx.respond('There was an error. Please try again.')
 
 
 @client.slash_command(name='salaam', description="Send a greeting message.")
 async def salaam(ctx):
     responses = [' wa ʿalaykumu s-salām']
-    await ctx.send(f'{random.choice(responses)}')
+    await ctx.respond(f'{random.choice(responses)}')
 
 
 @client.slash_command(name='pp', description="Sends the profile picture of a user.")
@@ -126,14 +126,14 @@ async def pp(ctx, member: discord.Member = None):
         embed.set_image(url=ctx.author.avatar_url)
         embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                                   "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
     else:
         embed = discord.Embed(title="Here is the profile picture of " + member.display_name + ":", type='rich',
                               color=0x048c28)
         embed.set_image(url=member.avatar_url)
         embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                                   "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
 
 
 @client.slash_command(name='changelog', description="Shows the latest changes.")
@@ -143,26 +143,26 @@ async def changelog(ctx):
     embed.add_field(name="Latest Changes:", value=changelogs.read())
     embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                               "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
-    await ctx.send(embed=embed)
+    await ctx.respond(embed=embed)
     changelogs.close()
 
 
 @client.slash_command(name='trivia', description="Asks a random islamic trivia question.")
 async def trivia(ctx):
-    await ctx.send("This command is in construction!")
-    # await ctx.send(embed=trivia_embed[0], components=[action_row])
+    await ctx.respond("This command is in construction!")
+    # await ctx.respond(embed=trivia_embed[0], components=[action_row])
     #
     # author_id = str(ctx.author)
     # trivia_embed = create_trivia_embed(author_id)
     #
     # action_row = create_actionrow(*trivia_embed[1])
-    # await ctx.send(embed=trivia_embed[0], components=[action_row])
+    # await ctx.respond(embed=trivia_embed[0], components=[action_row])
     # while True:
     #     try:
     #         button_ctx = await wait_for_component(client, components=action_row,
     #                                               timeout=600)
     #         if button_ctx.custom_id == trivia_embed[2]:
-    #             await ctx.send("That is the correct answer!", delete_after=3)
+    #             await ctx.respond("That is the correct answer!", delete_after=3)
     #
     #             for _ in range(0, 10):
     #                 trivia_embed[0].remove_field(0)
@@ -171,7 +171,7 @@ async def trivia(ctx):
     #             await button_ctx.edit_origin(embed=trivia_embed[0], components=None)
     #             return
     #         else:
-    #             await ctx.send("That is the wrong answer! Please try again!", delete_after=3)
+    #             await ctx.respond("That is the wrong answer! Please try again!", delete_after=3)
     #             await button_ctx.edit_origin(embed=trivia_embed[0])
     #
     #     except asyncio.TimeoutError:

@@ -85,7 +85,7 @@
 #             self.current = source
 #
 #             self._guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
-#             self.np = await self._channel.send(f'**Now Reciting:** {source.title} requested by '
+#             self.np = await self._channel.respond(f'**Now Reciting:** {source.title} requested by '
 #                                                f'{source.requester}')
 #             await self.next.wait()
 #
@@ -171,11 +171,11 @@
 #     async def __error(self, ctx, error):
 #         if isinstance(error, commands.NoPrivateMessage):
 #             try:
-#                 return await ctx.send('This command can not be used in Private Messages.')
+#                 return await ctx.respond('This command can not be used in Private Messages.')
 #             except discord.HTTPException:
 #                 pass
 #         elif isinstance(error, InvalidVoiceChannel):
-#             await ctx.send('Error connecting to Voice Channel. '
+#             await ctx.respond('Error connecting to Voice Channel. '
 #                            'Please make sure you are in a valid channel or provide me with one')
 #
 #         print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
@@ -213,7 +213,7 @@
 #             except asyncio.TimeoutError:
 #                 raise VoiceConnectionError(f'Connecting to channel: <{channel}> timed out.')
 #
-#         await ctx.send(f'Connected to: **{channel}**', delete_after=20)
+#         await ctx.respond(f'Connected to: **{channel}**', delete_after=20)
 #
 #     @commands.command(name='play', brief='Search or use url to queue a single track.',
 #                       aliases=['read', 'recite', 'recitequran', 'readquran'])
@@ -225,10 +225,10 @@
 #             first_ayah = int(array2[0])
 #             last_ayah = int(array2[1])
 #             if last_ayah - first_ayah > 20:
-#                 await ctx.send("You can only request up to 20 ayah.")
+#                 await ctx.respond("You can only request up to 20 ayah.")
 #                 return
 #         except Exception:
-#             await ctx.send("Please enter a valid surah/ayah in this format: Surah:firstayah-lastayah")
+#             await ctx.respond("Please enter a valid surah/ayah in this format: Surah:firstayah-lastayah")
 #             return
 #
 #         await ctx.trigger_typing()
@@ -244,42 +244,42 @@
 #                                                           data_input=f"{surah}:{i}")
 #                 await player.queue.put(source)
 #             if counter == 0:
-#                 await ctx.send("Please enter a valid surah/ayah in this format: 1:1-7")
+#                 await ctx.respond("Please enter a valid surah/ayah in this format: 1:1-7")
 #                 return
-#             await ctx.send(f"Added the following to queue: Surah {surah}:{first_ayah} to {surah}:{last_ayah}.")
+#             await ctx.respond(f"Added the following to queue: Surah {surah}:{first_ayah} to {surah}:{last_ayah}.")
 #         else:
-#             await ctx.send("Please enter a valid surah/ayah in this format: 1:1-7")
+#             await ctx.respond("Please enter a valid surah/ayah in this format: 1:1-7")
 #
 #     @commands.command(name='pause', brief='Pause the current ayah.')
 #     async def pause_(self, ctx):
 #         vc = ctx.voice_client
 #
 #         if not vc or not vc.is_playing():
-#             return await ctx.send('I am not currently reciting anything!', delete_after=20)
+#             return await ctx.respond('I am not currently reciting anything!', delete_after=20)
 #         elif vc.is_paused():
 #             return
 #
 #         vc.pause()
-#         await ctx.send(f'**`{ctx.author}`**: Paused the song!')
+#         await ctx.respond(f'**`{ctx.author}`**: Paused the song!')
 #
 #     @commands.command(name='resume', brief='Resume the paused ayah.')
 #     async def resume_(self, ctx):
 #         vc = ctx.voice_client
 #
 #         if not vc or not vc.is_connected():
-#             return await ctx.send('I am not currently reciting anything!', delete_after=20)
+#             return await ctx.respond('I am not currently reciting anything!', delete_after=20)
 #         elif not vc.is_paused():
 #             return
 #
 #         vc.resume()
-#         await ctx.send(f'**`{ctx.author}`**: Resumed the song!')
+#         await ctx.respond(f'**`{ctx.author}`**: Resumed the song!')
 #
 #     @commands.command(name='skip', brief='Skip the current ayah.')
 #     async def skip_(self, ctx):
 #         vc = ctx.voice_client
 #
 #         if not vc or not vc.is_connected():
-#             return await ctx.send('I am not currently reciting anything!', delete_after=20)
+#             return await ctx.respond('I am not currently reciting anything!', delete_after=20)
 #
 #         if vc.is_paused():
 #             pass
@@ -287,18 +287,18 @@
 #             return
 #
 #         vc.stop()
-#         await ctx.send(f'**`{ctx.author}`**: Skipped the song!')
+#         await ctx.respond(f'**`{ctx.author}`**: Skipped the song!')
 #
 #     @commands.command(name='queue', aliases=['q'], brief='List the next 5 ayah in the queue.')
 #     async def queue_info(self, ctx):
 #         vc = ctx.voice_client
 #
 #         if not vc or not vc.is_connected():
-#             return await ctx.send('I am not currently connected to voice!', delete_after=20)
+#             return await ctx.respond('I am not currently connected to voice!', delete_after=20)
 #
 #         player = self.get_player(ctx)
 #         if player.queue.empty():
-#             return await ctx.send('There are currently no more queued verses.')
+#             return await ctx.respond('There are currently no more queued verses.')
 #
 #         upcoming = list(itertools.islice(player.queue._queue, 0, 5))
 #
@@ -306,7 +306,7 @@
 #         embed = discord.Embed(title=f'Upcoming - Next {len(upcoming)} out of {len(player.queue._queue)} in queue.',
 #                               description=fmt)
 #
-#         await ctx.send(embed=embed)
+#         await ctx.respond(embed=embed)
 #
 #     @commands.command(name='now_reading', aliases=['nr', 'current', 'reciting', 'reading', 'now_reciting'],
 #                       brief="Get the ayah being recited.")
@@ -314,11 +314,11 @@
 #         vc = ctx.voice_client
 #
 #         if not vc or not vc.is_connected():
-#             return await ctx.send('I am not currently connected to voice!', delete_after=200)
+#             return await ctx.respond('I am not currently connected to voice!', delete_after=200)
 #
 #         player = self.get_player(ctx)
 #         if not player.current:
-#             return await ctx.send('I am not currently reciting anything!', delete_after=200)
+#             return await ctx.respond('I am not currently reciting anything!', delete_after=200)
 #
 #         try:
 #             # Remove our previous now_playing message.
@@ -326,7 +326,7 @@
 #         except discord.HTTPException:
 #             pass
 #
-#         player.np = await ctx.send(f'**Now Reciting:** `{vc.source.title}` '
+#         player.np = await ctx.respond(f'**Now Reciting:** `{vc.source.title}` '
 #                                    f'requested by `{vc.source.requester}`', delete_after=200)
 #
 #     @commands.command(name='volume', aliases=['vol'], brief='Adjust the volume.')
@@ -334,10 +334,10 @@
 #         vc = ctx.voice_client
 #
 #         if not vc or not vc.is_connected():
-#             return await ctx.send('I am not currently connected to voice!', delete_after=20)
+#             return await ctx.respond('I am not currently connected to voice!', delete_after=20)
 #
 #         if not 0 < vol < 101:
-#             return await ctx.send('Please enter a value between 1 and 100.')
+#             return await ctx.respond('Please enter a value between 1 and 100.')
 #
 #         player = self.get_player(ctx)
 #
@@ -345,14 +345,14 @@
 #             vc.source.volume = vol / 100
 #
 #         player.volume = vol / 100
-#         await ctx.send(f'**`{ctx.author}`**: Set the volume to **{vol}%**')
+#         await ctx.respond(f'**`{ctx.author}`**: Set the volume to **{vol}%**')
 #
 #     @commands.command(name='stop', brief='Stop reciting.')
 #     async def stop(self, ctx):
 #         vc = ctx.voice_client
 #
 #         if not vc or not vc.is_connected():
-#             return await ctx.send('I am not currently reciting anything!', delete_after=20)
+#             return await ctx.respond('I am not currently reciting anything!', delete_after=20)
 #
 #         await self.cleanup(ctx.guild)
 #
@@ -361,9 +361,9 @@
 #         try:
 #             vc = ctx.voice_client
 #             await vc.disconnect()
-#             await ctx.send("Sadaqa Allaah al-‘Azeem.", delete_after=20)
+#             await ctx.respond("Sadaqa Allaah al-‘Azeem.", delete_after=20)
 #         except Exception:
-#             await ctx.send("I am not currently connected to any channel.", delete_after=20)
+#             await ctx.respond("I am not currently connected to any channel.", delete_after=20)
 #
 #     @commands.command(brief='Find a specific ayah from the Quran')
 #     async def quran(self, ctx, surah_and_ayah: str):
@@ -394,14 +394,14 @@
 #             ]
 #             action_row = create_actionrow(*buttons)
 #
-#             await ctx.send(embed=embed, components=[action_row])
+#             await ctx.respond(embed=embed, components=[action_row])
 #
 #             while True:
 #                 try:
 #                     button_ctx = await wait_for_component(self.bot, components=action_row,
 #                                                           timeout=600)
 #                     if button_ctx.custom_id == "recite" + surah_and_ayah:
-#                         await ctx.send("Loading audio. This may take up to 10 seconds depending on the length.",
+#                         await ctx.respond("Loading audio. This may take up to 10 seconds depending on the length.",
 #                                        delete_after=10)
 #                         await ctx.trigger_typing()
 #                         vc = ctx.voice_client
@@ -414,19 +414,19 @@
 #                                                                   loop=self.bot.loop,
 #                                                                   data_input=f"{surah + 1}:{first_ayah}")
 #                         await player.queue.put(source)
-#                         await ctx.send(
+#                         await ctx.respond(
 #                             f"Added the following to queue: Surah {surah + 1}:{first_ayah}.", delete_after=20)
 #
 #                 except asyncio.TimeoutError:
 #                     break
 #
-#             await ctx.send(embed=embed)
+#             await ctx.respond(embed=embed)
 #             return
 #
 #         last_ayah = int(array2[1])
 #
 #         if last_ayah - first_ayah > 6:
-#             await ctx.send("Please do not request more than 7 ayah.")
+#             await ctx.respond("Please do not request more than 7 ayah.")
 #             return
 #         embed = discord.Embed(title=f"Surah {surah_name}", type='rich', color=0x048c28)
 #         for x in range(first_ayah, last_ayah + 1):
@@ -439,7 +439,7 @@
 #             else:
 #                 embed.add_field(name="Ayah " + str(x), value=text, inline=False)
 #
-#         await ctx.send(embed=embed)
+#         await ctx.respond(embed=embed)
 #
 #     @commands.command(brief='Browse a surah in the quran.', aliases=['browse', 'browsequran'])
 #     async def browse_quran(self, ctx, surah_and_ayah: str):
@@ -450,12 +450,12 @@
 #         try:
 #             embed = create_quran_embed(surah, current_ayah)
 #         except IndexError:
-#             await ctx.send("Could not find that surah/ayah combination. Please let us know is this is en error.")
+#             await ctx.respond("Could not find that surah/ayah combination. Please let us know is this is en error.")
 #             return
 #
 #         action_row = create_actionrow(*create_quran_buttons(surah_and_ayah))
 #
-#         msg = await ctx.send(embed=embed, components=[action_row])
+#         msg = await ctx.respond(embed=embed, components=[action_row])
 #
 #         while True:
 #             try:
@@ -477,7 +477,7 @@
 #                         await button_ctx.edit_origin(embed=create_quran_embed(surah, current_ayah))
 #
 #                 elif button_ctx.custom_id == "recite" + surah_and_ayah:
-#                     await ctx.send("Loading audio. This may take up to 10 seconds depending on the length.",
+#                     await ctx.respond("Loading audio. This may take up to 10 seconds depending on the length.",
 #                                    delete_after=10)
 #                     await ctx.trigger_typing()
 #                     vc = ctx.voice_client
@@ -490,11 +490,11 @@
 #                                                               loop=self.bot.loop,
 #                                                               data_input=f"{surah}:{current_ayah}")
 #                     await player.queue.put(source)
-#                     await ctx.send(
+#                     await ctx.respond(
 #                         f"Added the following to queue: Surah {surah}:{current_ayah}.")
 #
 #             except asyncio.TimeoutError:
 #                 break
 #
-#         await ctx.send(embed=embed)
+#         await ctx.respond(embed=embed)
 #         return

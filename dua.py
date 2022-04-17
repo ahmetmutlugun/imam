@@ -70,7 +70,7 @@ class Prayer(commands.Cog):
 
     @slash_command(name='hadith', description="Sends a hadith")
     async def hadith(self, ctx, collection: str = "random", number: int = None):
-        await ctx.send("This command is under construction!")
+        await ctx.respond("This command is under construction!")
         # if collection == "random":
         #     # Send request to sunnah.com api
         #     r = requests.get(url="https://api.sunnah.com/v1/hadiths/random",
@@ -82,12 +82,12 @@ class Prayer(commands.Cog):
         #     final_number = data["hadithNumber"]
         #
         # elif collection.lower() not in collection_names:
-        #     await ctx.send(
+        #     await ctx.respond(
         #         f"Your collection is not supported. Please choose from the following collections: \n {collections_str}")
         #     return
         #
         # elif number is None:
-        #     await ctx.send(
+        #     await ctx.respond(
         #         f"Please provide a collection name and number from the following "
         #         f"collections: \n {collections_str}\n ")
         #     return
@@ -102,7 +102,7 @@ class Prayer(commands.Cog):
         #         final_collection = collection.capitalize()
         #         final_number = number
         #     except Exception as e:
-        #         await ctx.send(
+        #         await ctx.respond(
         #             f"Hadith not found. If you are sure {collection.capitalize()} {number} "
         #             f"exists, contact sharpie#0317")
         #         return
@@ -115,7 +115,7 @@ class Prayer(commands.Cog):
         #     ]
         #     action_row = manage_components.create_actionrow(*buttons)
         #
-        #     await ctx.send(embed=create_hadith_embed(final_number, final_collection, final_wrapped[0], 1),
+        #     await ctx.respond(embed=create_hadith_embed(final_number, final_collection, final_wrapped[0], 1),
         #                    components=[action_row])
         #
         #     page = 0
@@ -144,11 +144,11 @@ class Prayer(commands.Cog):
         #             break
         #
         # else:
-        #     await ctx.send(embed=create_hadith_embed(final_number, final_collection, final_hadith, 1))
+        #     await ctx.respond(embed=create_hadith_embed(final_number, final_collection, final_hadith, 1))
 
     @slash_command(name='besmele', description="Sends a besmele.")
     async def besmele(self, ctx):
-        await ctx.send(f'Bismillâhirrahmânirrahîm')
+        await ctx.respond(f'Bismillâhirrahmânirrahîm')
 
     @slash_command(name='pray', description="[@mention] pray for a user or a group of users.")
     async def dua(self, ctx, user_: discord.Role or discord.Member):
@@ -159,11 +159,11 @@ class Prayer(commands.Cog):
                 f'O Allah, Forgive {user_.mention} of his sins '
                 f'O Allah, Ease {user_.mention} \'s mind '
                 ]
-        await ctx.send(f'{random.choice(duas)}')
+        await ctx.respond(f'{random.choice(duas)}')
 
     @slash_command(name='salawat', description="Salawat upon the Prophet")
     async def salawat(self, ctx):
-        await ctx.send(f'O Allah! send Your blessing upon Muhammad and the progeny of Muhammad')
+        await ctx.respond(f'O Allah! send Your blessing upon Muhammad and the progeny of Muhammad')
 
     @slash_command(name='esma', description="Sends one of Allah\'s names. Chooses randomly if no number is specified.")
     async def esma(self, ctx, number: int = None):
@@ -219,4 +219,4 @@ class Prayer(commands.Cog):
         else:
             response = names[number - 1]
 
-        await ctx.send(f'One of His Names is {response}')
+        await ctx.respond(f'One of His Names is {response}')
