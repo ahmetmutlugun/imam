@@ -1,3 +1,11 @@
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/29da1f4975974778b1fcb71847908269)](https://www.codacy.com/gh/ahmetmutlugun/imam/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ahmetmutlugun/imam&amp;utm_campaign=Badge_Grade)
+![Issues](https://img.shields.io/github/issues/ahmetmutlugun/imam)
+![Stars](https://img.shields.io/github/stars/ahmetmutlugun/imam)
+![License](https://img.shields.io/github/license/ahmetmutlugun/imam)
+![Lines](https://img.shields.io/tokei/lines/github.com/ahmetmutlugun/imam)
+![GitHub Commit Activity](https://img.shields.io/github/commit-activity/m/ahmetmutlugun/imam)
+
+
 # Imam Bot
 Imam Bot is a discord bot with many features. Some of the key functionality includes prayer times based on location, getting Quran verses, reciting the Quran, and getting hadith. 
 
