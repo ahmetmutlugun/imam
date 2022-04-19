@@ -6,8 +6,7 @@ import discord
 import requests
 from discord.ext import commands
 
-from discord.commands import \
-    slash_command, Option
+from discord.commands import slash_command
 
 errorText = "No prayer time found for your location. Please set a new location using imam location <city>"
 
@@ -32,7 +31,7 @@ def set_user_data(userID, dataName, dataValue):
 
 
 def get_location(author_id):
-    """
+    """Get location
     Returns location of a user
     :param author_id: user id
     :return: city - user's city as string
@@ -112,8 +111,7 @@ def get_local_time_offset(author_id):
             offset = data[str(author_id)]['utc_offset']
             return offset
 
-    except Exception as e:
-        # logging.error(e)
+    except Exception:
         # Return the utc offset of Cupertino by default
         return -25200
 
@@ -167,7 +165,7 @@ class Webscraping2(commands.Cog):
 
             # Adds spaces in the city name: i.e. SanJose is now San Jose
             formatted_city = ""
-            for i in range(len(city)):
+            for i, _ in enumerate(city):  # TODO: confirm this works
                 add_space = False
                 # If i isn't the last index
                 if i < len(city) - 1:

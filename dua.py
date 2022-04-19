@@ -53,6 +53,10 @@ def create_hadith_embed(number, collection, hadith, page):
 
 class Prayer(commands.Cog):
     def __init__(self, client):
+        """Prayer
+        Create Prayer Cog
+        param: client bot client
+        """
         self.client = client
         self._last_member = None
 
@@ -142,7 +146,7 @@ class Prayer(commands.Cog):
 
     @slash_command(name='besmele', description="Sends a besmele.")
     async def besmele(self, ctx):
-        await ctx.respond(f'Bismillâhirrahmânirrahîm')
+        await ctx.respond('Bismillâhirrahmânirrahîm')
 
     @slash_command(name='pray', description="[@mention] pray for a user or a group of users.")
     async def dua(self, ctx, user_: discord.Role or discord.Member):
@@ -157,55 +161,55 @@ class Prayer(commands.Cog):
 
     @slash_command(name='salawat', description="Salawat upon the Prophet")
     async def salawat(self, ctx):
-        await ctx.respond(f'O Allah! send Your blessing upon Muhammad and the progeny of Muhammad')
+        await ctx.respond('O Allah! send Your blessing upon Muhammad and the progeny of Muhammad')
 
     @slash_command(name='esma', description="Sends one of Allah\'s names. Chooses randomly if no number is specified.")
     async def esma(self, ctx, number: int = None):
-        names = ['ar-Rahman (The Most Gracious)', f'ar-Rahim (The Most Merciful)',
-                 'al-Malik (The Sovereign)', f'al-Quddus (The Holy)', f'as-Salam (The Giver of Peace)',
-                 'al-Mu\'min (The Granter of Security)', f'al-Muhaymin (The Controller)', f'al-Aziz(The Almighty)',
-                 'al-Jabbar (The Omnipotent)', f'al-Mutakabbir (The Possessor of Greatness)',
+        names = ['ar-Rahman (The Most Gracious)', 'ar-Rahim (The Most Merciful)',
+                 'al-Malik (The Sovereign)', 'al-Quddus (The Holy)', 'as-Salam (The Giver of Peace)',
+                 'al-Mu\'min (The Granter of Security)', 'al-Muhaymin (The Controller)', 'al-Aziz(The Almighty)',
+                 'al-Jabbar (The Omnipotent)', 'al-Mutakabbir (The Possessor of Greatness)',
                  'al-Khaliq (The Creator)',
-                 'al-Bari (The Initiator)', f'al-Musawwir (The Fashioner)', f'al-Ghaffar (The Absolute Forgiver)',
-                 'al-Qahhar (The Subduer)', f'al-Wahhab (The Absolute Bestower)', f'ar-Razzaq (The Provider)',
+                 'al-Bari (The Initiator)', 'al-Musawwir (The Fashioner)', 'al-Ghaffar (The Absolute Forgiver)',
+                 'al-Qahhar (The Subduer)', 'al-Wahhab (The Absolute Bestower)', 'ar-Razzaq (The Provider)',
                  'al-Fattah (The Victory Giver)',
-                 'al-Aliym (The Omniscient)', f'al-Qabid (The Restrainer)', f'al-Basit (The Extender)',
-                 'al-Khafid (The Humiliator)', f'ar-Rafi (The Exalter)', f'al-Mu\'izz (The Giver of Honor)',
+                 'al-Aliym (The Omniscient)', 'al-Qabid (The Restrainer)', 'al-Basit (The Extender)',
+                 'al-Khafid (The Humiliator)', 'ar-Rafi (The Exalter)', 'al-Mu\'izz (The Giver of Honor)',
                  'al-Mudill (The Giver of Dishonor)',
-                 'as-Samiy (The Hearing)', f'al-Basir (The All-Seeing)', f'al-Hakam (The Judge)', f'al-Adl (The Just)',
+                 'as-Samiy (The Hearing)', 'al-Basir (The All-Seeing)', 'al-Hakam (The Judge)', 'al-Adl (The Just)',
                  'al-Latiyf (The Gentle)',
-                 'al-Khabiyr (The All-Aware)', f'al-Haliym (The Forbearing)', f'al-Aziym (The Most Great)',
-                 'al-Ghafur (The Ever-Forgiving)', f'ash-Shakur (The Grateful)',
-                 'al-Aliyy (The Sublime)', f'al-Kabir (The Great)', f'al-Hafiyz (The Preserver)',
+                 'al-Khabiyr (The All-Aware)', 'al-Haliym (The Forbearing)', 'al-Aziym (The Most Great)',
+                 'al-Ghafur (The Ever-Forgiving)', 'ash-Shakur (The Grateful)',
+                 'al-Aliyy (The Sublime)', 'al-Kabir (The Great)', 'al-Hafiyz (The Preserver)',
                  'al-Muqiyt (The Nourisher)',
-                 'al-Hasiyb (The Bringer of Judgement)', f'al-Jaliyl (The Majestic)', f'al-Kariym (The Noble)',
-                 'ar-Raqiyb (The Watchful)', f'al-Mujiyb (The Responsive)',
-                 'al-Wasi (The Vast)', f'al-Hakiym (The Wise)', f'al-Wadood (The Affectionate)',
+                 'al-Hasiyb (The Bringer of Judgement)', 'al-Jaliyl (The Majestic)', 'al-Kariym (The Noble)',
+                 'ar-Raqiyb (The Watchful)', 'al-Mujiyb (The Responsive)',
+                 'al-Wasi (The Vast)', 'al-Hakiym (The Wise)', 'al-Wadood (The Affectionate)',
                  'al-Majiyd (The All-Glorious)',
-                 'al-Baa\'ith (The Resurrector)', f'ash-Shahiyd (The Witness)', f'al-Haqq (The Truth)',
+                 'al-Baa\'ith (The Resurrector)', 'ash-Shahiyd (The Witness)', 'al-Haqq (The Truth)',
                  'al-Wakiyl (The Trustee)',
-                 'al-Qawiyy (The Strong)', f'al-Matiyn (The Firm)', f'al-Waliyy (The Friend)',
+                 'al-Qawiyy (The Strong)', 'al-Matiyn (The Firm)', 'al-Waliyy (The Friend)',
                  'al-Hamiyd (The All Praiseworthy)',
-                 'al-Muhsiy (The Accounter)', f'al-Mubdi\' (The Originator)', f'al-Mu\'iyd (The Restorer)',
+                 'al-Muhsiy (The Accounter)', 'al-Mubdi\' (The Originator)', 'al-Mu\'iyd (The Restorer)',
                  'al-Muhyee (The Giver of Life',
-                 'al-Mumiyt (The Bringer of Death)', f'al-Hayy (The Living)', f'al-Qayyum (The Subsisting)',
+                 'al-Mumiyt (The Bringer of Death)', 'al-Hayy (The Living)', 'al-Qayyum (The Subsisting)',
                  'al-Wajid (The Perceiver)',
-                 'al-Majid (The Illustrious)', f'al-Wahid (The Unique)', f'al-Ahad (The One)',
+                 'al-Majid (The Illustrious)', 'al-Wahid (The Unique)', 'al-Ahad (The One)',
                  'as-Samad (The Eternal)',
-                 'al-Qadir (The All-Powerful)', f'al-Muqtadir (The Determiner)', f'al-Mugaddim (The Expediter)',
-                 'al-Mu\'akhhir (The Delayer)', f'al-Awwal (The First)', f'al-Akhir (The Last)',
+                 'al-Qadir (The All-Powerful)', 'al-Muqtadir (The Determiner)', 'al-Mugaddim (The Expediter)',
+                 'al-Mu\'akhhir (The Delayer)', 'al-Awwal (The First)', 'al-Akhir (The Last)',
                  'az-Zahir (The Manifest)',
-                 'al-Batin (The Hidden)', f'al-Waali (The Patron)', f'al-Muta\'aali (The Supremely Exalted)',
-                 'al-Barr (The Good)', f'at-Tawwaab (The Ever-Returning)', f'al-Muntaqim (The Avenger)',
-                 'al-\'Afuww (The Pardoner)', f'ar-Ra\'ouf (The Kind)',
+                 'al-Batin (The Hidden)', 'al-Waali (The Patron)', 'al-Muta\'aali (The Supremely Exalted)',
+                 'al-Barr (The Good)', 'at-Tawwaab (The Ever-Returning)', 'al-Muntaqim (The Avenger)',
+                 'al-\'Afuww (The Pardoner)', 'ar-Ra\'ouf (The Kind)',
                  'al-Maalik ul-Mulk (The Owner of all Sovereignty)',
                  'al-Ḏuʼl-Jalāli waʼl-ʼIkrām, Dhuʼl-Jalāli waʼl-ʼIkrām (The Owner, Lord of Majesty and Honor)',
-                 'al-Muqsit (The Equitable)', f'al-Jaami\' (The Unifier)', f'al-Ghaniyy (The Rich)',
+                 'al-Muqsit (The Equitable)', 'al-Jaami\' (The Unifier)', 'al-Ghaniyy (The Rich)',
                  'al-Mughniyy (The Enricher)',
-                 'al-Maani\' (The Defender)', f'adh-Dhaarr (The Distressor)', f'an-Naafi\' (The Benefactor)',
+                 'al-Maani\' (The Defender)', 'adh-Dhaarr (The Distressor)', 'an-Naafi\' (The Benefactor)',
                  'an-Nour (The Light)',
-                 'al-Haadi (The Guide)', f'al-Badiy (The Originator)', f'al-Baaqi (The Immutable)',
-                 'al-Waarith (The Heir)', f'ar-Rashiyd (The Guide to the Right Path)', f'as-Sabour (The Timeless)'
+                 'al-Haadi (The Guide)', 'al-Badiy (The Originator)', 'al-Baaqi (The Immutable)',
+                 'al-Waarith (The Heir)', 'ar-Rashiyd (The Guide to the Right Path)', 'as-Sabour (The Timeless)'
                  ]
 
         if number is None or number < 1 or number > 99:

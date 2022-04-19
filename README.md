@@ -5,80 +5,154 @@
 ![Lines](https://img.shields.io/tokei/lines/github.com/ahmetmutlugun/imam)
 ![GitHub Commit Activity](https://img.shields.io/github/commit-activity/m/ahmetmutlugun/imam)
 
-
 # Imam Bot
-Imam Bot is a discord bot with many features. Some of the key functionality includes prayer times based on location, getting Quran verses, reciting the Quran, and getting hadith. 
 
-## Prayer:
-  ### besmele      
+Imam Bot is a discord bot with many features. Some of the key functionality includes prayer times based on location,
+getting Quran verses, reciting the Quran, and getting hadith.
+
+## Prayer
+
+### besmele
+
 Sends a besmele
-  ### dua [@mention]       
+
+### dua
+
 Pray for a user or a group of users.
-  ### esma [number]
+
+### esma
+
 Sends one of Allah's names. Chooses randomly if a number is not specified.
-  ### hadith [collection] [number]
+
+### hadith
+
 Sends a hadith. If there is no collection or number specified, chooses randomly.
-  ### salawat      
+
+### salawat
+
 Gives salawat for the Prophet
-## Recite:
-  ### browse [surah:ayah]
+
+## Recite
+
+### browse
+
 Browse a surah in the quran. A surah and ayah must be specified for the starting point.
-  ### connect      
+
+### connect
+
 Connect to a voice channel.
-  ### leave        
+
+### leave
+
 Leave the voice channel
-  ### now_reading  
+
+### now_reading
+
 Get the ayah being recited.
-  ### pause        
+
+### pause
+
 Pause the current ayah.
-  ### play [surah:first-last] 
+
+### play
+
 Search or use url to queue ayahs. A surah and the range of ayahs must be specified like 1:1-7.
-  ### queue        
+
+### queue
+
 List the next 5 ayah in the queue.
-  ### quran [surah:ayah] OR [surah:first-last]
+
+### quran
+
 Find a specific ayah from the Quran.
-  ### resume       
+
+### resume
+
 Resume the paused ayah.
-  ### skip         
+
+### skip
+
 Skip the current ayah.
-  ### stop         
+
+### stop
+
 Stop reciting.
-  ### volume [percentage]     
+
+### volume
+
 Adjust the volume.
-## Prayer Times:
-These prayer times find the time from the user's specified location. You can use "imam location" to set your location. The default location will be Cupertino, US by default.
-  ### asr          
+
+## Prayer Times
+
+These prayer times find the time from the user's specified location. You can use "imam location" to set your location.
+The default location will be Cupertino, US by default.
+
+### asr
+
 Displays the asr time
-  ### dhuhr        
-Displays the dhuhr time 
-  ### fajr         
-Displays the fajr time 
-  ### isha         
+
+### dhuhr
+
+Displays the dhuhr time
+
+### fajr
+
+Displays the fajr time
+
+### isha
+
 Displays the isha time
-  ### maghrib      
+
+### maghrib
+
 Displays the maghrib time
-  ### location [city,countrycode]
+
+### location
+
 Set your location for prayer commands.
-  ### pnow         
+
+### pnow
+
 Sends the current prayer time and how much time left for the next prayer time
-  ### pt
+
+### pt
+
 Sends all prayer times
-## Other:
-  ### changelog    
+
+## Other
+
+### changelog
+
 Show the last update
-  ### dhikr        
+
+### dhikr
+
 Sends a reminder
-  ### help         
+
+### help
+
 Shows all comands.
-  ### izlam        
+
+### izlam
+
 Sends a random meme from the r/izlam or r/memritv subreddits.
-  ### ping         
+
+### ping
+
 Displays bot ping
-  ### pp [@user]   
+
+### pp
+
 Sends the profile picture of a user
-  ### slm          
+
+### slm
+
 Send a greeting message.
-  ### takbeer      
+
+### takbeer
+
 Takbeer
-  ### trivia       
+
+### trivia
+
 Asks a random islamic trivia question

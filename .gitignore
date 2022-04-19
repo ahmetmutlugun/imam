@@ -54,3 +54,5 @@ data/data.json
 data/keys/token.env
 config.json
 data/config.json
+data/en_hilali.json
+data/quran_audio.txt

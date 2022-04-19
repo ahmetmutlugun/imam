@@ -173,9 +173,6 @@ async def trivia(ctx):
 
 
 def get_random_question():
-    """
-    Selects a random question from the questions json file
-    """
     with open('data/questions.json', 'r+') as f:
         data = json.load(f)
     return data[str(crypto.choice(range(0, len(data))))]
