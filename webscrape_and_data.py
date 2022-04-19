@@ -2,7 +2,6 @@ import datetime
 import json
 import http.client
 import urllib.parse
-
 import discord
 import requests
 from discord.ext import commands
@@ -49,7 +48,7 @@ def get_location(author_id):
         else:
             return ['Cupertino', 'United States of America']
 
-    except Exception as e:
+    except KeyError:
         # logging.error(e)
         return ['Cupertino', 'United States of America']
 
@@ -133,7 +132,12 @@ def create_user(userid: str, imam: int, tovbe: int, city: str, elham: int, utc_o
 
 
 class Webscraping2(commands.Cog):
+
     def __init__(self, bot):
+        """
+        Create a Webscraping2 cog
+        :param bot client
+        """
         self.client = bot
         self._last_member = None
 

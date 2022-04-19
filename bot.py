@@ -1,21 +1,13 @@
-import asyncio
 import json
 import logging
-import random
+from random import SystemRandom
 import discord
 import praw
 import requests
 from discord.ext import commands
-from discord.ext.commands import Bot
-
-from discord.ext import tasks
-import discord
-from discord.ext import commands
-
-from discord.ext.commands import has_permissions
 
 from dua import Prayer
-#from quran_audio import Recite
+# from quran_audio import Recite
 from webscrape_and_data import Webscraping2
 
 logging.basicConfig(level=logging.INFO)
@@ -36,6 +28,7 @@ client = commands.AutoShardedBot(description="A Discord bot with a set of Islami
 
 guilds = []
 guild_ids = []
+crypto = SystemRandom()
 
 
 # Case insensitivity can cause performance issues
@@ -47,6 +40,7 @@ async def on_ready():
     for guild in client.guilds:
         guilds.append(guild)
         guild_ids.append(guild.id)
+    print(guilds)
 
 
 @commands.Cog.listener()
@@ -86,12 +80,13 @@ async def dhikr(ctx):
 @client.slash_command(name='meme', description="Sends a meme from r/izlam")
 async def meme(ctx):
     async with ctx.channel.typing():
+
         subs = ['izlam', 'MemriTVmemes']
-        discordsubreddit = random.choice(subs)
+        discord_subreddit = crypto.choice(subs)
         try:
-            subreddit = reddit.subreddit(discordsubreddit)
+            subreddit = reddit.subreddit(discord_subreddit)
             posts = [post for post in subreddit.hot(limit=20)]
-            random_post_number = random.randint(0, 20)
+            random_post_number = crypto.choice(range(0, 20))
             submission = posts[random_post_number]
             if not submission.stickied:
                 discordreceive = {'title': submission.title, 'link': f'https://www.reddit.com{submission.permalink}'}
@@ -115,8 +110,7 @@ async def meme(ctx):
 
 @client.slash_command(name='salaam', description="Send a greeting message.")
 async def salaam(ctx):
-    responses = [' wa ʿalaykumu s-salām']
-    await ctx.respond(f'{random.choice(responses)}')
+    await ctx.respond(' wa ʿalaykumu s-salām')
 
 
 @client.slash_command(name='pp', description="Sends the profile picture of a user.")
@@ -184,7 +178,8 @@ def get_random_question():
     """
     with open('data/questions.json', 'r+') as f:
         data = json.load(f)
-    return data[str(random.randint(0, len(data) - 1))]
+    return data[str(crypto.choice(range(0, len(data))))]
+
 
 #
 # def create_trivia_embed(author_id):
@@ -228,5 +223,5 @@ def get_random_question():
 
 client.add_cog(Prayer(client))
 client.add_cog(Webscraping2(client))
-#client.add_cog(Recite(client))
+# client.add_cog(Recite(client))
 client.run(config['discord'])
