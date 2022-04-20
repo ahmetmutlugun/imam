@@ -2,8 +2,8 @@ import json
 from random import SystemRandom
 
 import discord
-from discord.commands import \
-    slash_command
+from discord.commands import slash_command
+
 from discord.ext import commands
 
 crypto = SystemRandom()

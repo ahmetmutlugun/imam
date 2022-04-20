@@ -5,7 +5,6 @@ import urllib.parse
 import discord
 import requests
 from discord.ext import commands
-
 from discord.commands import slash_command
 
 errorText = "No prayer time found for your location. Please set a new location using imam location <city>"

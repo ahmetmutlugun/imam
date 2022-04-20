@@ -5,9 +5,9 @@ import discord
 import praw
 import requests
 from discord.ext import commands
-
+from quran_audio import Recite
+from paginator import PageTest
 from dua import Prayer
-# from quran_audio import Recite
 from webscrape_and_data import Webscraping2
 
 logging.basicConfig(level=logging.INFO)
@@ -21,10 +21,7 @@ reddit = praw.Reddit(client_id=config['reddit'],
                      client_secret=config['redditsecret'],
                      user_agent="u/sharpaxeyt")
 
-# client: Bot = commands.Bot(command_prefix=[prefix, 'Imam '], case_insensitive=True, description="A bot for islamic "
-#                                                                                                 "commands and tools.")
 client = commands.AutoShardedBot(description="A Discord bot with a set of Islamic tools.")
-# slash = SlashCommand(client, sync_commands=True)  # Declares slash commands through the client.
 
 guilds = []
 guild_ids = []
@@ -220,5 +217,6 @@ def get_random_question():
 
 client.add_cog(Prayer(client))
 client.add_cog(Webscraping2(client))
-# client.add_cog(Recite(client))
+client.add_cog(Recite(client))
+client.add_cog(PageTest(client))
 client.run(config['discord'])
