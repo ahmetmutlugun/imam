@@ -7,8 +7,8 @@ import requests
 from discord.ext import commands
 from quran_audio import Recite
 from paginator import PageTest
-from dua import Prayer
-from webscrape_and_data import Webscraping2
+from dua import Dua
+from prayer import PrayerTimes
 
 logging.basicConfig(level=logging.INFO)
 f = open('data/config.json', 'r+')
@@ -215,8 +215,8 @@ def get_random_question():
 #     return embed, buttons, author_id + data["correct_answer"] + r, data[data["correct_answer"]], data["question"]
 
 
-client.add_cog(Prayer(client))
-client.add_cog(Webscraping2(client))
+client.add_cog(Dua(client))
+client.add_cog(PrayerTimes(client))
 client.add_cog(Recite(client))
 client.add_cog(PageTest(client))
 client.run(config['discord'])

@@ -1,5 +1,6 @@
 import datetime
 import json
+import logging
 import http.client
 import urllib.parse
 import discord
@@ -51,12 +52,20 @@ def get_location(author_id):
         return ['Cupertino', 'United States of America']
 
 
-def web_scrape(city, country):
-    """
-    Returns all prayer times for a specific location
-    :param: city - string of user's city
-    :param: country - string of user's country
-    :rtype: prayer_times - dictionary of all prayer times
+def get_prayer_times(city: str, country: str) -> "dict[str, str]":
+    """Returns all prayer times for a specific location
+
+    Parameters
+    ----------
+    city : str
+        A user's city's name
+    country : str
+            A user's country
+
+    Returns
+    -------
+    pt : dict[str, str] 
+        dictionary of all prayer times
     """
 
     url = f'https://api.aladhan.com/v1/timingsByCity?city={city}&country={country}&method=2'
@@ -69,12 +78,20 @@ def web_scrape(city, country):
     return pt
 
 
-def calc_local_time_offset(city, country):
-    """
-    Gets the local utc offset from positionstack's API
-    :param city: string of a city
-    :param country: string of a country
-    :return: int value of utc offset in seconds
+def calc_local_time_offset(city: str, country: str) -> str:
+    """Gets the local utc offset from positionstack's API
+
+    Parameters
+    ----------
+    city : str
+        A city name 
+    country : str
+        A country name
+
+    Returns
+    -------
+    offset : str
+        String representation of utc offset in seconds
     """
     # Connect to the position stack API
     conn = http.client.HTTPConnection('api.positionstack.com')
@@ -97,11 +114,18 @@ def calc_local_time_offset(city, country):
         return None
 
 
-def get_local_time_offset(author_id):
-    """
-    Returns local time offset of a user from data.json
-    :param author_id: user id
-    :return: city - user's city as string
+def get_local_time_offset(author_id) -> int:
+    """Returns local time offset of a user from data.json
+    
+    Parameters
+    ---------
+    author_id : 
+        user id
+    
+    Returns
+    -------
+    utc_offset : int
+        UTC offset for the user
     """
     with open('data/data.json', 'r+') as f:
         data = json.load(f)
@@ -115,99 +139,103 @@ def get_local_time_offset(author_id):
         return -25200
 
 
-def create_user(userid: str, imam: int, tovbe: int, city: str, elham: int, utc_offset: int, country: str):
+def create_user(userid: str, iman: int, tovbe: int, city: str, elham: int, utc_offset: int, country: str):
+    """ Creates a user in the data.json
+
+    Parameters
+    ---------- 
+        userid : str 
+           A user's discord id 
+        iman : int
+            A user's iman as determined by the bot
+        tovbe : int
+            A user's tovbe count
+        city : str
+            A user's configured city
+        elham : int
+            A user's elhamdulillah count
+        utc_offset : int
+            A user's utc offset
+        country : str
+            A user's country
+    """
     with open('data/data.json', 'r+') as f:
         data = json.load(f)
 
     if userid not in data:  # see if user doesn't have a saved location
         # Save user location, utc_offset, and defaults
-        new_user = {"imam": imam, "tovbe": tovbe, "city": city, "elham": elham, "utc_offset": utc_offset,
+        new_user = {"imam": iman, "tovbe": tovbe, "city": city, "elham": elham, "utc_offset": utc_offset,
                     "country": country}
         data[userid] = new_user
         with open('data/data.json', 'w') as json_file:  # write to data.json
             json.dump(data, json_file, indent=4)
 
 
-class Webscraping2(commands.Cog):
+class PrayerTimes(commands.Cog):
 
     def __init__(self, bot):
         """
-        Create a Webscraping2 cog
+        Create a PrayerTimes cog
         :param bot client
         """
         self.client = bot
         self._last_member = None
 
     @slash_command(name='location', description="Set your location for prayer commands. imam location <city>")
-    async def location(self, ctx, user_loc: str):
+    async def location(self, ctx, city: discord.Option(str, "Pick a city"), country: discord.Option(str, "Pick a country")):
+        """Changes user's location to their parameter specified location
+
+        Parameters
+        ----------
+            ctx : 
+                Context
+            city : discord.Option
+                 A discord option to specify a city str
+            country : discord.Option 
+                A discord option to specify a country str 
         """
-        Changes user's location to their parameter specified location
-        :param ctx: Context
-        :param user_loc: String of user-specified city
-        :return: String of a success message
-        """
+        # open data.json file to read later
+        with open('data/data.json', 'r+') as f:
+            data = json.load(f)
 
-        if len(user_loc.split(',')) == 2:
+        with open('data/countyCodes.json', 'r+') as cc:
+            countryData = json.load(cc)
+        if country not in countryData:
+            await ctx.respond("Please enter a valid country code.")
+            return
 
-            city = user_loc.split(',')[0]
-            country = user_loc.split(',')[1]
+        # Get the local time offset for the specified city
+        utc_offset = calc_local_time_offset(city, country)
+        if utc_offset is None:
+            await ctx.respond("Your location is invalid. Please use \"\\location <CityName> <CountryName>\"")
+            return
 
-            # open data.json file to read later
-            with open('data/data.json', 'r+') as f:
-                data = json.load(f)
-
-            with open('data/countyCodes.json', 'r+') as cc:
-                countryData = json.load(cc)
-            if country not in countryData:
-                await ctx.respond("Please enter a valid country code.")
-                return
-
-            # Adds spaces in the city name: i.e. SanJose is now San Jose
-            formatted_city = ""
-            for i, _ in enumerate(city):  # TODO: confirm this works
-                add_space = False
-                # If i isn't the last index
-                if i < len(city) - 1:
-                    if city[i].islower() and city[i + 1].isupper():
-                        add_space = True
-                formatted_city += city[i]
-                if add_space:
-                    formatted_city += " "
-
-            # Get the local time offset for the specified city
-            utc_offset = calc_local_time_offset(formatted_city, country)
-            if utc_offset is None:
-                await ctx.respond("Your location is invalid. Please use \"imam location <CityName>,<CountryName>\"")
-                return
-
-            try:
-                if str(ctx.author.id) not in data:  # see if user doesn't have a saved location
-                    create_user(str(ctx.author.id), 1, 0, city, 0, utc_offset, country)
-                else:
-                    data[str(ctx.message.author.id)]['city'] = formatted_city
-                    data[str(ctx.message.author.id)]['utc_offset'] = utc_offset
-                    data[str(ctx.message.author.id)]['country'] = countryData[country]
-                    with open('data/data.json', 'w') as json_file:
-                        json.dump(data, json_file, indent=4)
-            except Exception as e:
-                # logging.error(e)
-                print(e)
-            await ctx.respond(
-                "User location changed to: \nCity: " + formatted_city + "\nCountry: " + countryData[country])
-        else:
-            await ctx.respond("Please format as \"imam location City,CountryCode\"")
+        try:
+            if str(ctx.author.id) not in data:  # see if user doesn't have a saved location
+                create_user(str(ctx.author.id), 1, 0, city, 0, utc_offset, country)
+            else:
+                data[str(ctx.message.author.id)]['city'] = city
+                data[str(ctx.message.author.id)]['utc_offset'] = utc_offset
+                data[str(ctx.message.author.id)]['country'] = countryData[country]
+                with open('data/data.json', 'w') as json_file:
+                    json.dump(data, json_file, indent=4)
+        except Exception as e:
+            logging.error(e)
+            print(e)
+        await ctx.respond(
+            "User location changed to: \nCity: " + city + "\nCountry: " + countryData[country])
 
     @slash_command(name='fajr', description="Displays the fajr time.")
     async def fajr(self, ctx):
         """
-        Returns fajr prayer time using web-scrape()'s prayer_times
+        Returns fajr prayer time using get_prayer_times()'s prayer_times
         :param ctx: Context
         :return: string of fajr prayer time
         """
         location = get_location(ctx.author.id)  # get user location
         city = location[0].replace("_", " ")
         country = location[1].replace("_", " ")
-        time = web_scrape(city, country)
+        time = get_prayer_times(city, country)
         if time is None:
             await ctx.respond(errorText)
         else:
@@ -216,14 +244,14 @@ class Webscraping2(commands.Cog):
     @slash_command(name='dhuhr', description="Displays the dhuhr time.")
     async def dhuhr(self, ctx):
         """
-        Returns dhuhr prayer time using web-scrape()'s prayer_times
+        Returns dhuhr prayer time using get_prayer_times()'s prayer_times
         :param ctx: Context
         :return: string of dhuhr prayer time
         """
         location = get_location(ctx.author.id)  # get user location
         city = location[0].replace("_", " ")
         country = location[1].replace("_", " ")
-        time = web_scrape(city, country)
+        time = get_prayer_times(city, country)
         if time is None:
             await ctx.respond(errorText)
         else:
@@ -232,14 +260,14 @@ class Webscraping2(commands.Cog):
     @slash_command(name='asr', description="Displays the Asr time.")
     async def asr(self, ctx):
         """
-        Returns asr prayer time using web-scrape()'s prayer_times
+        Returns asr prayer time using get_prayer_times()'s prayer_times
         :param ctx: Context
         :return: string of asr prayer time
         """
         location = get_location(ctx.author.id)  # get user location
         city = location[0].replace("_", " ")
         country = location[1].replace("_", " ")
-        time = web_scrape(city, country)
+        time = get_prayer_times(city, country)
         if time is None:
             await ctx.respond(errorText)
         else:
@@ -248,14 +276,14 @@ class Webscraping2(commands.Cog):
     @slash_command(name='maghrib', description="Displays the maghrib time.")
     async def maghrib(self, ctx):
         """
-        Returns maghrib prayer time using web-scrape()'s prayer_times
+        Returns maghrib prayer time using get_prayer_times()'s prayer_times
         :param ctx: Context
         :return: string of maghrib prayer time
         """
         location = get_location(ctx.author.id)  # get user location
         city = location[0].replace("_", " ")
         country = location[1].replace("_", " ")
-        time = web_scrape(city, country)
+        time = get_prayer_times(city, country)
         if time is None:
             await ctx.respond(errorText)
         else:
@@ -264,14 +292,14 @@ class Webscraping2(commands.Cog):
     @slash_command(name='isha', description="Displays the isha time.")
     async def isha(self, ctx):
         """
-        Returns isha prayer time using web-scrape()'s prayer_times
+        Returns isha prayer time using get_prayer_times()'s prayer_times
         :param ctx: Context
         :return: string of isha prayer time
         """
         location = get_location(ctx.author.id)  # get user location
         city = location[0].replace("_", " ")
         country = location[1].replace("_", " ")
-        time = web_scrape(city, country)
+        time = get_prayer_times(city, country)
         if time is None:
             await ctx.respond(errorText)
         else:
@@ -280,7 +308,7 @@ class Webscraping2(commands.Cog):
     @slash_command(name='prayer_times', description="Displays all prayer times.")
     async def prayer_times(self, ctx):
         """
-        Returns all prayer times as a string using web-scrape()
+        Returns all prayer times as a string using get_prayer_times()
         :param ctx: Context
         :return: string of all prayer times
         """
@@ -289,8 +317,8 @@ class Webscraping2(commands.Cog):
         city = location[0].replace("_", " ")
         country = location[1].replace("_", " ")
 
-        # Obtains dictionary from webscrape() and reformats it
-        prayer_times = web_scrape(city, country)
+        # Obtains dictionary from get_prayer_times() and reformats it
+        prayer_times = get_prayer_times(city, country)
         # Creates a returnable string of all the prayer times
         string = "Prayer times for " + city + ", " + country + ":\n"
 
@@ -306,7 +334,7 @@ class Webscraping2(commands.Cog):
     @slash_command(name='prayer_now', description="Displays the current prayer time.")
     async def pnow(self, ctx):
         """
-        Returns the current and next prayer times, and the time left until the next prayertime
+        Returns the current and next prayer times, and the time left until the next prayer time
         :param ctx: Context
         :return: String of current & next prayer time + time left
         """
@@ -315,7 +343,7 @@ class Webscraping2(commands.Cog):
         city = location[0].replace("_", " ")
         country = location[1].replace("_", " ")
         # Obtains dictionary from webscrape() and reformats it
-        prayer_times = web_scrape(city, country)
+        prayer_times = get_prayer_times(city, country)
 
         # Get the local time in seconds
         local_time = datetime.timedelta(seconds=get_local_time_offset(ctx.author.id)) + datetime.datetime.utcnow()
@@ -334,7 +362,7 @@ class Webscraping2(commands.Cog):
                 break
 
         # If the local time is greater than Isha time and isn't midnight yet
-        # TODO: refactor with match statements
+        # TODO: refactor with match statements (if we upgrade to py 3.10)
         if pnext == "Midnight":
             pnow = "Isha"
         elif pnext == "N/A" or pnext == 'Fajr':

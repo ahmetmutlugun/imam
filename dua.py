@@ -75,7 +75,7 @@ def create_hadith_embed(number: int, collection: str, hadith: str, page: int) ->
     return embed
 
 
-class Prayer(commands.Cog):
+class Dua(commands.Cog):
     def __init__(self, client):
         """Prayer
         Create Prayer Cog
