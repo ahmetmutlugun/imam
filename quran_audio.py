@@ -3,9 +3,11 @@
 # https://gist.github.com/EvieePy/ab667b74e9758433b3eb806c53a19f34
 # """
 import asyncio
+from contextvars import Context
 import json
 import sys
 import time
+import logging
 
 import discord
 from discord.ext import commands, pages
@@ -13,6 +15,10 @@ from discord.commands import slash_command
 import itertools
 import traceback
 from async_timeout import *
+
+logger = logging.getLogger('discord')
+logger.setLevel(logging.DEBUG)
+
 
 FFMPEG_OPTIONS = {
     'before_options': '-nostdin -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
@@ -26,25 +32,6 @@ class VoiceConnectionError(commands.CommandError):
 
 class InvalidVoiceChannel(VoiceConnectionError):
     """Exception for cases of invalid Voice Channels."""
-
-
-# Define a simple View that gives us a counter button
-class Counter(discord.ui.View):
-
-    # Define the actual button
-    # When pressed, this increments the number displayed until it hits 5.
-    # When it hits 5, the counter button is disabled and it turns green.
-    # NOTE: The name of the function does not matter to the library
-    @discord.ui.button(label="0", style=discord.ButtonStyle.red)
-    async def count(self, button: discord.ui.Button, interaction: discord.Interaction):
-        number = int(button.label) if button.label else 0
-        if number >= 4:
-            button.style = discord.ButtonStyle.green
-            button.disabled = True
-        button.label = str(number + 1)
-
-        # Make sure to update the message with our updated selves
-        await interaction.response.edit_message(view=self)
 
 
 class AudiusSource(discord.PCMVolumeTransformer):
@@ -125,39 +112,46 @@ class MusicPlayer:
         return self.bot.loop.create_task(self._cog.cleanup(guild))
 
 
-def quran_audio_api(sure, ayet):
+def quran_audio_api(surah, ayah):
     f = open("data/quran_audio.txt", "r+")
     data = json.load(f)
     f.close()
 
     for key in data:
-        if key['verse_key'] == f"{sure}:{ayet}":
+        if key['verse_key'] == f"{surah}:{ayah}":
             return f"https://download.quranicaudio.com/verses/{key['url']}"
     return
 
+def create_quran_embed(surah: int, ayah: int) -> discord.Embed:
+    """ Creates an embed for a quran surah and ayah
 
-# def create_quran_buttons(surah_and_ayah):
-#     buttons = [
-#
-#         create_button(style=ButtonStyle.grey, label="Previous Ayah",
-#                       custom_id="previous" + surah_and_ayah),
-#         create_button(style=ButtonStyle.green, label="Next Ayah",
-#                       custom_id="next" + surah_and_ayah),
-#         create_button(style=ButtonStyle.blurple, label="Recite",
-#                       custom_id="recite" + surah_and_ayah),
-#         create_button(style=ButtonStyle.red, label="Close",
-#                       custom_id="close" + surah_and_ayah)
-#     ]
-#     return buttons
+    Parameters
+    ----------
+    surah : int
+        The surah number
+    ayah: int
+        The ayah number of the surah
+    
+    Raises
+    ------
+    IndexError:
+        Raised if the surah number is invalid or the ayah number
+    
+    Returns
+    -------
+    embed: discord.Embed
+        An embed containing the quran surah and ayah
 
-
-def create_quran_embed(surah, ayah):
+    """  
     f = open('data/en_hilali.json', 'r+')
     data = json.load(f)
     f.close()
 
-    surah_name = data["data"]["surahs"][surah - 1]["englishName"]
-    text = data["data"]["surahs"][surah - 1]["ayahs"][ayah - 1]["text"]
+    try:
+        surah_name = data["data"]["surahs"][surah - 1]["englishName"]
+        text = data["data"]["surahs"][surah - 1]["ayahs"][ayah - 1]["text"]
+    except IndexError as e:
+        raise e 
 
     embed = discord.Embed(title=f"Surah {surah_name}", type='rich', color=0x048c28)
     embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
@@ -385,78 +379,46 @@ class Recite(commands.Cog):
         except Exception:
             await ctx.respond("I am not currently connected to any channel.", delete_after=20)
 
-    @slash_command()
-    async def counter(self, ctx):
-        """Starts a counter for pressing."""
-        await ctx.respond("Press!", view=Counter())
-
     @slash_command(name="quran")
     async def quran(self, ctx, surah_and_ayah: str):
+        logger.info("Handling /quran")
+        """ Creates a series of quran embeds for a given surah starting at ayah 1
 
+        Parameters
+        ---------
+        ctx : 
+            A context
+        
+        surah_and_ayah : str
+            A string containing a surah and an ayah
+        
+        """
+
+        # Retrieve the parameters
         array = surah_and_ayah.split(":")
         surah = int(array[0])
         current_ayah = int(array[1])
 
+        # Try creating an embed, throw an index error if the surah was invalid
         try:
-            embed = create_quran_embed(surah, current_ayah)
+           create_quran_embed(surah, current_ayah)
         except IndexError:
             await ctx.respond("Could not find that surah/ayah combination. Please let us know is this is en error.")
+            logger.error("Could not find that surah/ayah combination.")
             return
 
-        # action_row = create_actionrow(*create_quran_buttons(surah_and_ayah))
-
-        # msg = await ctx.respond(embed=embed, components=[action_row])
+        # Start a timer and initialize a list of pages
         start = time.time()
-
         page_list = []
+        # For each ayah create a new embed and append it to the list of pages
         for i in range(1, 286):
             try:
                 page_list.append(create_quran_embed(surah, i))
             except IndexError as e:
-                print(e)
+                logging.error("Index error in /quran %s", e)
                 break
+        # Create the paginator and then return it
         paginator = pages.Paginator(pages=page_list)
         await paginator.respond(ctx.interaction, ephemeral=False)
 
-        print(time.time() - start)
-        # while True:
-        #     try:
-        #         button_ctx = await wait_for_component(self.bot, components=action_row,
-        #                                               timeout=600)
-        #         if button_ctx.custom_id == 'previous' + surah_and_ayah:
-        #             if current_ayah > 1:
-        #                 current_ayah -= 1
-        #             await button_ctx.edit_origin(embed=create_quran_embed(surah, current_ayah))
-        #         elif button_ctx.custom_id == 'close' + surah_and_ayah:
-        #             await msg.delete()
-        #             return
-        #         elif button_ctx.custom_id == 'next' + surah_and_ayah:
-        #             current_ayah += 1
-        #             try:
-        #                 await button_ctx.edit_origin(embed=create_quran_embed(surah, current_ayah))
-        #             except Exception:
-        #                 current_ayah -= 1
-        #                 await button_ctx.edit_origin(embed=create_quran_embed(surah, current_ayah))
-        #
-        #         elif button_ctx.custom_id == "recite" + surah_and_ayah:
-        #             await ctx.respond("Loading audio. This may take up to 10 seconds depending on the length.",
-        #                               delete_after=10)
-        #             await ctx.trigger_typing()
-        #             vc = ctx.voice_client
-        #             if not vc:
-        #                 await ctx.invoke(self.connect_)
-        #
-        #             print(quran_audio_api(surah, current_ayah))
-        #             player = self.get_player(ctx)
-        #             source = await AudiusSource.create_source(ctx, quran_audio_api(surah, current_ayah),
-        #                                                       loop=self.bot.loop,
-        #                                                       data_input=f"{surah}:{current_ayah}")
-        #             await player.queue.put(source)
-        #             await ctx.respond(
-        #                 f"Added the following to queue: Surah {surah}:{current_ayah}.")
-        #
-        #     except asyncio.TimeoutError:
-        #         break
-
-        # await ctx.respond(embed=embed)
-        # return
+        logger.debug(time.time() - start)

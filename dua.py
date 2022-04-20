@@ -1,12 +1,18 @@
 import json
+import time
+import requests
+import textwrap
+import logging
 from random import SystemRandom
 
 import discord
 from discord.commands import slash_command
-
-from discord.ext import commands
+from discord.ext import commands, pages
 
 crypto = SystemRandom()
+
+logger = logging.getLogger('discord')
+logger.setLevel(logging.DEBUG)
 
 f = open('data/config.json', 'r+')
 config = json.load(f)
@@ -42,12 +48,30 @@ def process_hadith(hadith_json):
     return final_hadith
 
 
-def create_hadith_embed(number, collection, hadith, page):
+def create_hadith_embed(number: int, collection: str, hadith: str, page: int) -> discord.Embed:
+    """ Creates a hadith embed given the following parameters
+
+    Parameters
+    ----------
+    number : int
+        The hadith number in the collection
+    collection : str
+        The name of the hadith collection
+    hadith : str
+        The actual hadith text
+    page : int
+        The page number after the hadith has been paginated
+    
+    Returns
+    -------
+    embed : discord.Embed
+        A hadith embed
+    """
     embed = discord.Embed(title=f"Hadith {number} from {collection} collection.", type='rich',
                           color=0x048c28)
-    embed.add_field(name=f"{collection} {number}  Page {page}", value=hadith)
     embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                               "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
+    embed.add_field(name=f"{collection} {number}  Page {page}", value=hadith)
     return embed
 
 
@@ -68,81 +92,76 @@ class Prayer(commands.Cog):
 
     @slash_command(name='hadith', description="Sends a hadith")
     async def hadith(self, ctx, collection: str = "random", number: int = None):
+        """ Sends a hadith embed to the context from which it was called
+
+        Parameters
+        ---------
+        self : Prayer
+            Prayer object
+        ctx : 
+            The context from which the command was invoked
+        collection : str
+            Specifies what collection to request a hadith from, set to
+            'random' by default 
+        number: int
+            Specifies the hadith number, set to None by default.
+        """
         await ctx.respond("This command is under construction!")
-        # if collection == "random":
-        #     # Send request to sunnah.com api
-        #     r = requests.get(url="https://api.sunnah.com/v1/hadiths/random",
-        #                      headers={"X-API-Key": config['sunnah']})
-        #     data = r.json()
-        #     final_hadith = process_hadith(data)
-        #     final_wrapped = textwrap.wrap(final_hadith, 1024)
-        #     final_collection = data["collection"].capitalize()
-        #     final_number = data["hadithNumber"]
-        #
-        # elif collection.lower() not in collection_names:
-        #     await ctx.respond(
-        #         f"Your collection is not supported. Please choose from the following collections: \n {collections_str}")
-        #     return
-        #
-        # elif number is None:
-        #     await ctx.respond(
-        #         f"Please provide a collection name and number from the following "
-        #         f"collections: \n {collections_str}\n ")
-        #     return
-        #
-        # else:
-        #     try:
-        #         r = requests.get(url=f"https://api.sunnah.com/v1/collections/{collection}/hadiths/{number}",
-        #                          headers={"X-API-Key": config['sunnah']})
-        #         data = r.json()
-        #         final_hadith = process_hadith(data)
-        #         final_wrapped = textwrap.wrap(final_hadith, 1024)
-        #         final_collection = collection.capitalize()
-        #         final_number = number
-        #     except Exception as e:
-        #         await ctx.respond(
-        #             f"Hadith not found. If you are sure {collection.capitalize()} {number} "
-        #             f"exists, contact sharpie#0317")
-        #         return
-        # if len(final_wrapped) >= 2:
-        #     buttons = [
-        #         manage_components.create_button(style=ButtonStyle.grey, label="Previous Page",
-        #                                         custom_id="hadith_previous_page"),
-        #         manage_components.create_button(style=ButtonStyle.green, label="Next Page",
-        #                                         custom_id="hadith_next_page")
-        #     ]
-        #     action_row = manage_components.create_actionrow(*buttons)
-        #
-        #     await ctx.respond(embed=create_hadith_embed(final_number, final_collection, final_wrapped[0], 1),
-        #                    components=[action_row])
-        #
-        #     page = 0
-        #     max_pages = len(final_wrapped) - 1
-        #
-        #     while True:
-        #         try:
-        #             button_ctx = await manage_components.wait_for_component(self.bot, components=action_row,
-        #                                                                     timeout=600)
-        #             if button_ctx.custom_id == 'hadith_previous_page':
-        #                 if page > 0:
-        #                     page -= 1
-        #                 else:
-        #                     page = max_pages
-        #                 await button_ctx.edit_origin(
-        #                     embed=create_hadith_embed(final_number, final_collection, final_wrapped[page], page + 1))
-        #             elif button_ctx.custom_id == 'hadith_next_page':
-        #                 if page < max_pages:
-        #                     page += 1
-        #                 else:
-        #                     page = 0
-        #                 await button_ctx.edit_origin(
-        #                     embed=create_hadith_embed(final_number, final_collection, final_wrapped[page], page + 1))
-        #
-        #         except asyncio.TimeoutError:
-        #             break
-        #
-        # else:
-        #     await ctx.respond(embed=create_hadith_embed(final_number, final_collection, final_hadith, 1))
+
+        # If no collection was specified get a random hadith
+        if collection == "random":
+            # Send request to sunnah.com api
+            r = requests.get(url="https://api.sunnah.com/v1/hadiths/random",
+            headers={"X-API-Key": config['sunnah']})
+            data = r.json()
+            final_hadith = process_hadith(data)
+            final_wrapped = textwrap.wrap(final_hadith, 1024)
+            final_collection = data["collection"].capitalize()
+            final_number = data["hadithNumber"]
+
+        # If the collection name is not in the list of collection_names return a helpful
+        # error message
+        elif collection.lower() not in collection_names:
+            await ctx.respond(
+                f"Your collection is not supported. Please choose from the following collections: \n {collections_str}")
+            return
+
+        # If the number of the hadith is not specified, return a helpful error message
+        elif number is None:
+            await ctx.respond(
+                f"Please provide a collection name and number from the following "
+                f"collections: \n {collections_str}\n ")
+            return
+
+        # Otherwise try to reach the hadith API 
+        else:
+            try:
+                r = requests.get(url=f"https://api.sunnah.com/v1/collections/{collection}/hadiths/{number}",
+                                 headers={"X-API-Key": config['sunnah']})
+                data = r.json()
+                # Clean the JSON response
+                final_hadith = process_hadith(data)
+                final_wrapped = textwrap.wrap(final_hadith, 1024)
+                final_collection = collection.capitalize()
+                final_number = number
+            except Exception:
+                await ctx.respond(
+                    f"Hadith not found. If you are sure {collection.capitalize()} {number} "
+                    f"exists, contact sharpie#0317")
+                return
+
+        # Start a timer and initialize a list of pages
+        start = time.time()
+        page_list = []
+        # For each ayah create a new embed and append it to the list of pages
+        for page, text in enumerate(final_wrapped):
+            page_list.append(create_hadith_embed(final_number, final_collection, text, page))
+
+        # Create the paginator and then return it
+        paginator = pages.Paginator(pages=page_list)
+        await paginator.respond(ctx.interaction, ephemeral=False)
+
+        logger.debug(time.time() - start)
 
     @slash_command(name='besmele', description="Sends a besmele.")
     async def besmele(self, ctx):
