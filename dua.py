@@ -3,16 +3,18 @@ import time
 import requests
 import textwrap
 import logging
+import re
+
 from random import SystemRandom
 
 import discord
-from discord.commands import slash_command
+from discord.commands import slash_command, Option
 from discord.ext import commands, pages
 
-crypto = SystemRandom()
+srandom = SystemRandom()
 
 logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 f = open('data/config.json', 'r+')
 config = json.load(f)
@@ -43,12 +45,11 @@ collections_str = "ahmad, bukhari, muslim, tirmidhi, abudawud, nasai, ibnmajah, 
 
 def process_hadith(hadith_json):
     final_hadith = hadith_json['hadith'][0]['body']
-    final_hadith = final_hadith.replace("<br/>", "").replace("<b>", "").replace("</b>", "").replace(
-        "</p>", "").replace("<p>", " ")
-    return final_hadith
+    html_tags = re.compile(r'<[^>]+>')
+    return html_tags.sub('', final_hadith).replace('`', '')
 
 
-def create_hadith_embed(number: int, collection: str, hadith: str, page: int) -> discord.Embed:
+def create_hadith_embed(number: int, collection: str, hadith: str, page: int, grade: str) -> discord.Embed:
     """ Creates a hadith embed given the following parameters
 
     Parameters
@@ -72,10 +73,11 @@ def create_hadith_embed(number: int, collection: str, hadith: str, page: int) ->
     embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                               "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
     embed.add_field(name=f"{collection} {number}  Page {page}", value=hadith)
+    embed.add_field(name="Grade", value=grade)
     return embed
 
 
-class Prayer(commands.Cog):
+class Dua(commands.Cog):
     def __init__(self, client):
         """Prayer
         Create Prayer Cog
@@ -91,7 +93,7 @@ class Prayer(commands.Cog):
     #  - Add quran page count
 
     @slash_command(name='hadith', description="Sends a hadith")
-    async def hadith(self, ctx, collection: str = "random", number: int = None):
+    async def hadith(self, ctx, collection: Option(str, "Enter a collection option", choices=collection_names, default="random"), number: int = None):
         """ Sends a hadith embed to the context from which it was called
 
         Parameters
@@ -118,6 +120,9 @@ class Prayer(commands.Cog):
             final_wrapped = textwrap.wrap(final_hadith, 1024)
             final_collection = data["collection"].capitalize()
             final_number = data["hadithNumber"]
+            final_grade = None
+            if "grade" in data:
+                final_grade = data['hadith'][0]['grade']
 
         # If the collection name is not in the list of collection_names return a helpful
         # error message
@@ -143,7 +148,11 @@ class Prayer(commands.Cog):
                 final_hadith = process_hadith(data)
                 final_wrapped = textwrap.wrap(final_hadith, 1024)
                 final_collection = collection.capitalize()
-                final_number = number
+                final_number = data["hadithNumber"]
+                final_grade = None
+                if "grade" in data:
+                    final_grade = data['hadith'][0]['grade']
+
             except Exception:
                 await ctx.respond(
                     f"Hadith not found. If you are sure {collection.capitalize()} {number} "
@@ -155,13 +164,13 @@ class Prayer(commands.Cog):
         page_list = []
         # For each ayah create a new embed and append it to the list of pages
         for page, text in enumerate(final_wrapped):
-            page_list.append(create_hadith_embed(final_number, final_collection, text, page))
+            page_list.append(create_hadith_embed(final_number, final_collection, text, page+1, final_grade))
 
         # Create the paginator and then return it
         paginator = pages.Paginator(pages=page_list)
         await paginator.respond(ctx.interaction, ephemeral=False)
 
-        logger.debug(time.time() - start)
+        logger.info(time.time() - start)
 
     @slash_command(name='besmele', description="Sends a besmele.")
     async def besmele(self, ctx):
@@ -176,14 +185,14 @@ class Prayer(commands.Cog):
                 f'O Allah, Forgive {user_.mention} of his sins '
                 f'O Allah, Ease {user_.mention} \'s mind '
                 ]
-        await ctx.respond(crypto.choice(duas))
+        await ctx.respond(srandom.choice(duas))
 
     @slash_command(name='salawat', description="Salawat upon the Prophet")
     async def salawat(self, ctx):
         await ctx.respond('O Allah! send Your blessing upon Muhammad and the progeny of Muhammad')
 
     @slash_command(name='esma', description="Sends one of Allah\'s names. Chooses randomly if no number is specified.")
-    async def esma(self, ctx, number: int = None):
+    async def esma(self, ctx, number: Option(int, min_value=1, max_value=99, default=None)):
         names = ['ar-Rahman (The Most Gracious)', 'ar-Rahim (The Most Merciful)',
                  'al-Malik (The Sovereign)', 'al-Quddus (The Holy)', 'as-Salam (The Giver of Peace)',
                  'al-Mu\'min (The Granter of Security)', 'al-Muhaymin (The Controller)', 'al-Aziz(The Almighty)',
@@ -231,9 +240,23 @@ class Prayer(commands.Cog):
                  'al-Waarith (The Heir)', 'ar-Rashiyd (The Guide to the Right Path)', 'as-Sabour (The Timeless)'
                  ]
 
-        if number is None or number < 1 or number > 99:
-            response = crypto.choice(names)
+        if number is None:
+            response = srandom.choice(names)
         else:
             response = names[number - 1]
 
         await ctx.respond(f'One of His Names is {response}')
+
+    @slash_command(name='takbeer', description="Takbeer!")
+    async def takbeer(self, ctx):
+        await ctx.respond("Allahuakbar")
+    
+    @slash_command(name='dhikr', description="Sends a reminder")
+    async def dhikr(ctx):
+        await ctx.respond(
+            "Indeed, it is We (Allah) who created humankind and fully know what their souls whisper to them, and We are closer to "
+            "them than their jugular vein (By His knowledge). (Qaf , ayah 16)")
+
+    @slash_command(name='salaam', description="Send a greeting message.")
+    async def salaam(ctx):
+        await ctx.respond(' wa ʿalaykumu s-salām')
