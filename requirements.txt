@@ -1,0 +1,4 @@
+asyncpraw
+requests
+asyncio
+PyNaCl
