@@ -146,7 +146,6 @@ class Webscraping2(commands.Cog):
         :param user_loc: String of user-specified city
         :return: String of a success message
         """
-
         if len(user_loc.split(',')) == 2:
 
             city = user_loc.split(',')[0]
@@ -184,9 +183,9 @@ class Webscraping2(commands.Cog):
                 if str(ctx.author.id) not in data:  # see if user doesn't have a saved location
                     create_user(str(ctx.author.id), 1, 0, city, 0, utc_offset, country)
                 else:
-                    data[str(ctx.message.author.id)]['city'] = formatted_city
-                    data[str(ctx.message.author.id)]['utc_offset'] = utc_offset
-                    data[str(ctx.message.author.id)]['country'] = countryData[country]
+                    data[str(ctx.author.id)]['city'] = formatted_city
+                    data[str(ctx.author.id)]['utc_offset'] = utc_offset
+                    data[str(ctx.author.id)]['country'] = countryData[country]
                     with open('data/data.json', 'w') as json_file:
                         json.dump(data, json_file, indent=4)
             except Exception as e:
