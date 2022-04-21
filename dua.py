@@ -4,6 +4,8 @@ import time
 import requests
 import textwrap
 import logging
+import re
+
 from random import SystemRandom
 
 import discord
@@ -13,7 +15,7 @@ from discord.ext import commands, pages
 crypto = SystemRandom()
 
 logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 f = open('data/config.json', 'r+')
 config = json.load(f)
@@ -44,9 +46,9 @@ collections_str = "ahmad, bukhari, muslim, tirmidhi, abudawud, nasai, ibnmajah, 
 
 def process_hadith(hadith_json):
     final_hadith = hadith_json['hadith'][0]['body']
-    final_hadith = final_hadith.replace("<br/>", "").replace("<b>", "").replace("</b>", "").replace(
-        "</p>", "").replace("<p>", " ")
-    return final_hadith
+    html_tags = re.compile(r'<[^>]+>')
+
+    return html_tags.sub('', final_hadith).replace('`', '')
 
 
 def create_hadith_embed(number: int, collection: str, hadith: str, page: int) -> discord.Embed:
@@ -162,7 +164,7 @@ class Dua(commands.Cog):
         paginator = pages.Paginator(pages=page_list)
         await paginator.respond(ctx.interaction, ephemeral=False)
 
-        logger.debug(time.time() - start)
+        logger.info(time.time() - start)
 
     @slash_command(name='besmele', description="Sends a besmele.")
     async def besmele(self, ctx):

@@ -17,7 +17,7 @@ import traceback
 from async_timeout import *
 
 logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 FFMPEG_OPTIONS = {
@@ -421,4 +421,4 @@ class Recite(commands.Cog):
         paginator = pages.Paginator(pages=page_list)
         await paginator.respond(ctx.interaction, ephemeral=False)
 
-        logger.debug(time.time() - start)
+        logger.info(time.time() - start)
