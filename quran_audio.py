@@ -10,6 +10,7 @@ import logging
 
 import discord
 from discord.ext import commands, pages
+from discord import Option
 from discord.commands import slash_command
 import itertools
 import traceback
@@ -23,7 +24,6 @@ FFMPEG_OPTIONS = {
     'before_options': '-nostdin -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
     'options': '-vn -loglevel panic'
 }
-
 
 class VoiceConnectionError(commands.CommandError):
     """Custom Exception class for connection errors."""
@@ -158,6 +158,24 @@ def create_quran_embed(surah: int, ayah: int) -> discord.Embed:
     embed.add_field(name="Ayah " + str(ayah), value=text)
 
     return embed
+
+def load_surahs() -> dict:
+    with open("./data/surahs.json", "w") as f:
+        data = json.load(f)
+
+    return data.values()
+
+def find_surah_id(surah : str) -> int:
+    with open("./data/surahs.json", "w") as f:
+        data = json.load(f)
+
+    # Find the surah id 
+    for k, v in data:
+        if v == surah:
+            return k
+
+    # Return -1 if it couldn't be found (shouldn't happen) 
+    return -1
 
 
 class Recite(commands.Cog):
@@ -379,28 +397,40 @@ class Recite(commands.Cog):
             await ctx.respond("I am not currently connected to any channel.", delete_after=20)
 
     @slash_command(name="quran")
-    async def quran(self, ctx, surah_and_ayah: str):
+    async def quran(self, ctx, surah: Option(str, "Select a surah", choices=load_surahs()), start_ayah: Option(int, "Start ayah", min_value=1, max_value=286, default=-1), 
+    end_ayah: Option(int, "End ayah", min_value=2, max_value=286, default=-1)):
         logger.info("Handling /quran")
-        """ Creates a series of quran embeds for a given surah starting at ayah 1
+        """ Creates a series of quran embeds for a given surah starting at start_ayah
 
         Parameters
         ---------
         ctx : 
             A context
-        
-        surah_and_ayah : str
-            A string containing a surah and an ayah
-        
+        surah : str
+            A surah of the user's choice
+        start_ayah : int
+            The starting ayah, set to -1 by default
+        end_ayah : int
+            The ending ayah, set to -1 by default
         """
 
-        # Retrieve the parameters
-        array = surah_and_ayah.split(":")
-        surah = int(array[0])
-        current_ayah = int(array[1])
+        # If no ayah was specified create an embed for the entire surah
+        if start_ayah == -1: 
+            start_ayah = 1
+            end_ayah = 286
+        # Return an error message if the end_ayah is smaller than or equal to start_ayah
+        elif end_ayah < start_ayah :
+            await ctx.send("end_ayah must be greater than start_ayah")
+            return
+        # If the end ayah isn't specified, create an embed for just the start_ayah
+        elif end_ayah == -1:
+            end_ayah = start_ayah+1
 
-        # Try creating an embed, throw an index error if the surah was invalid
+        # Get the ayah of the surah
+        surah_id = find_surah_id(surah)
+        # Check if the ayah was valid for that surah 
         try:
-           create_quran_embed(surah, current_ayah)
+           create_quran_embed(surah_id, start_ayah)
         except IndexError:
             await ctx.respond("Could not find that surah/ayah combination. Please let us know is this is en error.")
             logger.error("Could not find that surah/ayah combination.")
@@ -410,9 +440,9 @@ class Recite(commands.Cog):
         start = time.time()
         page_list = []
         # For each ayah create a new embed and append it to the list of pages
-        for i in range(1, 286):
+        for i in range(start_ayah, end_ayah):
             try:
-                page_list.append(create_quran_embed(surah, i))
+                page_list.append(create_quran_embed(surah_id, i))
             except IndexError as e:
                 logging.error("Index error in /quran %s", e)
                 break
