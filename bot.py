@@ -9,6 +9,7 @@ from dua import Dua
 from prayer import PrayerTimes
 from trivia import Trivia
 
+
 # Load logger, configs, and random object
 logging.basicConfig(level=logging.INFO)
 f = open('data/config.json', 'r+')
