@@ -7,6 +7,7 @@ from meme import Meme
 from quran_audio import Recite
 from dua import Dua
 from prayer import PrayerTimes
+from quran_pages import Quran_Pages
 from trivia import Trivia
 
 # Load logger, configs, and random object
@@ -87,6 +88,7 @@ async def changelog(ctx):
 client.add_cog(Dua(client))
 client.add_cog(PrayerTimes(client))
 client.add_cog(Recite(client))
+client.add_cog(Quran_Pages(client))
 client.add_cog(Meme(client))
 client.add_cog(Trivia(client))
 client.run(config['discord'])
