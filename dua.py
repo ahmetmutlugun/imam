@@ -1,4 +1,3 @@
-from email.policy import default
 import json
 import time
 import requests
@@ -47,11 +46,10 @@ collections_str = "ahmad, bukhari, muslim, tirmidhi, abudawud, nasai, ibnmajah, 
 def process_hadith(hadith_json):
     final_hadith = hadith_json['hadith'][0]['body']
     html_tags = re.compile(r'<[^>]+>')
-
     return html_tags.sub('', final_hadith).replace('`', '')
 
 
-def create_hadith_embed(number: int, collection: str, hadith: str, page: int) -> discord.Embed:
+def create_hadith_embed(number: int, collection: str, hadith: str, page: int, grade: str) -> discord.Embed:
     """ Creates a hadith embed given the following parameters
 
     Parameters
@@ -75,6 +73,7 @@ def create_hadith_embed(number: int, collection: str, hadith: str, page: int) ->
     embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                               "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
     embed.add_field(name=f"{collection} {number}  Page {page}", value=hadith)
+    embed.add_field(name=f"Grade", value=grade)
     return embed
 
 
@@ -121,6 +120,9 @@ class Dua(commands.Cog):
             final_wrapped = textwrap.wrap(final_hadith, 1024)
             final_collection = data["collection"].capitalize()
             final_number = data["hadithNumber"]
+            final_grade = None
+            if "grade" in data:
+                final_grade = data['hadith'][0]['grade']
 
         # If the collection name is not in the list of collection_names return a helpful
         # error message
@@ -146,7 +148,11 @@ class Dua(commands.Cog):
                 final_hadith = process_hadith(data)
                 final_wrapped = textwrap.wrap(final_hadith, 1024)
                 final_collection = collection.capitalize()
-                final_number = number
+                final_number = data["hadithNumber"]
+                final_grade = None
+                if "grade" in data:
+                    final_grade = data['hadith'][0]['grade']
+
             except Exception:
                 await ctx.respond(
                     f"Hadith not found. If you are sure {collection.capitalize()} {number} "
@@ -158,7 +164,7 @@ class Dua(commands.Cog):
         page_list = []
         # For each ayah create a new embed and append it to the list of pages
         for page, text in enumerate(final_wrapped):
-            page_list.append(create_hadith_embed(final_number, final_collection, text, page+1))
+            page_list.append(create_hadith_embed(final_number, final_collection, text, page+1, final_grade))
 
         # Create the paginator and then return it
         paginator = pages.Paginator(pages=page_list)

@@ -3,7 +3,6 @@
 # https://gist.github.com/EvieePy/ab667b74e9758433b3eb806c53a19f34
 # """
 import asyncio
-from contextvars import Context
 import json
 import sys
 import time

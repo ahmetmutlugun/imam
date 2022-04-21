@@ -15,19 +15,18 @@ config = json.load(f)
 f.close()
 
 
-def set_user_data(userID, dataName, dataValue):
+def set_user_data(user_id, data_name, data_value):
     try:
         f = open('data/data.json', 'r+')
         data = json.load(f)
         f.close()
-        if userID in data:
-            data[str(userID)][dataName] = dataValue
+        if user_id in data:
+            data[str(user_id)][data_name] = data_value
         with open('data/data.json', 'w') as json_file:
             json.dump(data, json_file, indent=4)
             json_file.truncate()
     except Exception as e:
-        # logging.error(e)
-        print(e)
+        logging.warning(e)
 
 
 def get_location(author_id):
@@ -48,7 +47,6 @@ def get_location(author_id):
             return ['Cupertino', 'United States of America']
 
     except KeyError:
-        # logging.error(e)
         return ['Cupertino', 'United States of America']
 
 
@@ -76,7 +74,6 @@ def get_prayer_times(city: str, country: str):
         return None
     ptl = {}
     for p in prayertimes:
-        print(data)
         ptl.update({p: data['data']['timings'][p]})
     return ptl
 
@@ -229,8 +226,9 @@ class PrayerTimes(commands.Cog):
         await ctx.respond(
             "User location changed to: \nCity: " + city + "\nCountry: " + countryData[country])
 
-    @slash_command(name="prayer",description="Display a user-specified prayer time",)
-    async def prayer(self, ctx, sub_command: Option(str, "Enter a Prayer option", choices=["fajr", "dhuhr", "asr", "maghrib", "isha", "all"])):
+    @slash_command(name="prayer", description="Display a user-specified prayer time", )
+    async def prayer(self, ctx, sub_command: Option(str, "Enter a Prayer option",
+                                                    choices=["fajr", "dhuhr", "asr", "maghrib", "isha", "all"])):
         """Returns user-specified prayer time from a list of prayer times (fajr, dhuhr, etc..) using
         get_prayer_times()
 
@@ -264,7 +262,7 @@ class PrayerTimes(commands.Cog):
 
             embed = discord.Embed(title="Prayer times for " + city + ", " + country, type='rich', color=0x048c28)
             embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
-                                                    "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
+                                                      "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
             # Add all prayer times as embeds to the main embed
             for key in time:
                 string += str(key) + ": " + str(time[key]) + "\n"
