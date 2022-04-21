@@ -1,4 +1,3 @@
-import discord
 from random import SystemRandom
 import random
 import json
@@ -9,8 +8,10 @@ from discord.ext import commands
 
 srandom = SystemRandom()
 
+
 class TriviaButton(discord.ui.Button):
     def __init__(self, ctx, label, is_answer, embed):
+
         super().__init__(style=discord.ButtonStyle.blurple, label=label)
         self.is_answer = is_answer
         self.ctx = ctx
@@ -27,7 +28,7 @@ class TriviaButton(discord.ui.Button):
         else:
             self.style = discord.ButtonStyle.danger
             await interaction.followup.send("That was not the right answer")
-        
+
 
 class TriviaView(View):
 
@@ -50,8 +51,7 @@ class TriviaView(View):
 
         # Add all child components
         for k, v in answers:
-            self.add_item(TriviaButton(self.ctx, label=k, is_answer=v,embed=self.embed))
-
+            self.add_item(TriviaButton(self.ctx, label=k, is_answer=v, embed=self.embed))
 
     async def on_timeout(self) -> None:
         """ View should clear items and send a time's up message on timeout
@@ -72,7 +72,7 @@ class Trivia(commands.Cog):
         """
         self.client = client
         self._last_member = None
-    
+
     @slash_command(name='trivia', description="Asks a random islamic trivia question.")
     async def trivia(self, ctx):
         await ctx.respond("This command is in construction!")
@@ -83,7 +83,7 @@ class Trivia(commands.Cog):
         view = TriviaView(ctx, correct_answer, buttons)
         # Send them both to user
         ctx.send(content="Starting a game of trivia... You have 30 seconds!", embed=embed, view=view)
-        
+
 
 def create_trivia_embed() -> tuple:
     """Creates a trivia embed
@@ -94,9 +94,9 @@ def create_trivia_embed() -> tuple:
     """
     data = get_random_question()
     embed = discord.Embed(title='Islamic Trivia', type='rich', color=discord.Color.blue(),
-                            description="Pick the answer choice that corresponds with the best answer.", )
+                          description="Pick the answer choice that corresponds with the best answer.", )
     embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
-                                                "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
+                                              "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
     embed.set_thumbnail(
         url="https://media.discordapp.net/attachments/453076515777937428/852697275716599808/IMAM-BOT-PSD.png?width"
             "=676&height=676")
@@ -114,11 +114,11 @@ def create_trivia_embed() -> tuple:
     for let, text in zip('abcd', options):
         embed.add_field(name=f"*Option {let}", value=text, inline=False)
         buttons[let] = (text == correct_answer)
-    
+
     return embed, buttons, data[data["correct_answer"]]
+
 
 def get_random_question():
     with open('data/questions.json', 'r+') as f:
         data = json.load(f)
     return data[str(srandom.choice(range(0, len(data))))]
-

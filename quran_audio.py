@@ -390,7 +390,6 @@ class Recite(commands.Cog):
         
         surah_and_ayah : str
             A string containing a surah and an ayah
-        
         """
 
         # Retrieve the parameters

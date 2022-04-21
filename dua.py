@@ -73,7 +73,7 @@ def create_hadith_embed(number: int, collection: str, hadith: str, page: int, gr
     embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                               "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
     embed.add_field(name=f"{collection} {number}  Page {page}", value=hadith)
-    embed.add_field(name=f"Grade", value=grade)
+    embed.add_field(name="Grade", value=grade)
     return embed
 
 

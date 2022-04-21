@@ -30,7 +30,8 @@ def set_user_data(user_id, data_name, data_value):
 
 
 def get_location(author_id):
-    """Get location
+    """
+    Get location
     Returns location of a user
     :param author_id: user id
     :return: city - user's city as string
@@ -51,8 +52,8 @@ def get_location(author_id):
 
 
 def get_prayer_times(city: str, country: str):
-    """Returns all prayer times for a specific location
-
+    """
+    Returns all prayer times for a specific location
     Parameters
     ----------
     city : str
@@ -62,7 +63,7 @@ def get_prayer_times(city: str, country: str):
 
     Returns
     -------
-    pt : dict[str, str] 
+    pt : dict[str, str]
         dictionary of all prayer times
     """
 
@@ -79,12 +80,12 @@ def get_prayer_times(city: str, country: str):
 
 
 def calc_local_time_offset(city: str, country: str) -> str:
-    """Gets the local utc offset from positionstack's API
-
+    """
+    Gets the local utc offset from positionstack's API
     Parameters
     ----------
     city : str
-        A city name 
+        A city name
     country : str
         A country name
 
@@ -115,11 +116,11 @@ def calc_local_time_offset(city: str, country: str) -> str:
 
 
 def get_local_time_offset(author_id) -> int:
-    """Returns local time offset of a user from data.json
-    
+    """
+    Returns local time offset of a user from data.json
     Parameters
     ---------
-    author_id : 
+    author_id :
         user id
     
     Returns
@@ -140,12 +141,12 @@ def get_local_time_offset(author_id) -> int:
 
 
 def create_user(userid: str, iman: int, tovbe: int, city: str, elham: int, utc_offset: int, country: str):
-    """ Creates a user in the data.json
-
+    """
+    Creates a user in the data.json
     Parameters
     ---------- 
-        userid : str 
-           A user's discord id 
+        userid : str
+           A user's discord id
         iman : int
             A user's iman as determined by the bot
         tovbe : int
@@ -176,6 +177,7 @@ class PrayerTimes(commands.Cog):
     def __init__(self, bot):
         """
         Create a PrayerTimes cog
+
         :param bot client
         """
         self.client = bot
@@ -184,16 +186,16 @@ class PrayerTimes(commands.Cog):
     @slash_command(name='location', description="Set your location for prayer commands. imam location <city>")
     async def location(self, ctx, city: discord.Option(str, "Pick a city"),
                        country: discord.Option(str, "Pick a country")):
-        """Changes user's location to their parameter specified location
-
+        """
+        Changes user's location to their parameter specified location
         Parameters
         ----------
             ctx :
                 Context from which location was invoked
             city : discord.Option
                  A discord option to specify a city str
-            country : discord.Option 
-                A discord option to specify a country str 
+            country : discord.Option
+                A discord option to specify a country str
         """
         # open data.json file to read later
         with open('data/data.json', 'r+') as f:
@@ -229,9 +231,9 @@ class PrayerTimes(commands.Cog):
     @slash_command(name="prayer", description="Display a user-specified prayer time", )
     async def prayer(self, ctx, sub_command: Option(str, "Enter a Prayer option",
                                                     choices=["fajr", "dhuhr", "asr", "maghrib", "isha", "all"])):
-        """Returns user-specified prayer time from a list of prayer times (fajr, dhuhr, etc..) using
+        """
+        Returns user-specified prayer time from a list of prayer times (fajr, dhuhr, etc..) using
         get_prayer_times()
-
         Parameters
         ----------
             ctx :
@@ -272,11 +274,11 @@ class PrayerTimes(commands.Cog):
 
     @slash_command(name='prayer_now', description="Displays the current prayer time.")
     async def prayer_now(self, ctx):
-        """Returns the current and next prayer times, and the time left until the next prayer time
-
+        """
+        Returns the current and next prayer times, and the time left until the next prayer time
         Parameters
         ----------
-        ctx : 
+        ctx :
             Context from which prayer_now was invoked
         """
         # Set up lists and dictionaries

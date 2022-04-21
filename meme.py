@@ -25,11 +25,12 @@ reddit = asyncpraw.Reddit(client_id=config['reddit'],
 
 class Meme(commands.Cog):
     def __init__(self, client):
-        """Creates a meme cog
+        """
+        Creates a meme cog
 
         Parameter
         ---------
-        client : 
+        client :
             bot client
         """
         self.client = client
