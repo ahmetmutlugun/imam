@@ -10,7 +10,7 @@ import discord
 from discord.commands import slash_command, Option
 from discord.ext import commands, pages
 
-crypto = SystemRandom()
+srandom = SystemRandom()
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
@@ -177,7 +177,7 @@ class Dua(commands.Cog):
                 f'O Allah, Forgive {user_.mention} of his sins '
                 f'O Allah, Ease {user_.mention} \'s mind '
                 ]
-        await ctx.respond(crypto.choice(duas))
+        await ctx.respond(srandom.choice(duas))
 
     @slash_command(name='salawat', description="Salawat upon the Prophet")
     async def salawat(self, ctx):
@@ -233,8 +233,22 @@ class Dua(commands.Cog):
                  ]
 
         if number is None:
-            response = crypto.choice(names)
+            response = srandom.choice(names)
         else:
             response = names[number - 1]
 
         await ctx.respond(f'One of His Names is {response}')
+
+    @slash_command(name='takbeer', description="Takbeer!")
+    async def takbeer(self, ctx):
+        await ctx.respond("Allahuakbar")
+    
+    @slash_command(name='dhikr', description="Sends a reminder")
+    async def dhikr(ctx):
+        await ctx.respond(
+            "Indeed, it is We (Allah) who created humankind and fully know what their souls whisper to them, and We are closer to "
+            "them than their jugular vein (By His knowledge). (Qaf , ayah 16)")
+
+    @slash_command(name='salaam', description="Send a greeting message.")
+    async def salaam(ctx):
+        await ctx.respond(' wa ʿalaykumu s-salām')
