@@ -7,6 +7,7 @@ from meme import Meme
 from quran_audio import Recite
 from dua import Dua
 from prayer import PrayerTimes
+from trivia import Trivia
 
 # Load logger, configs, and random object
 logging.basicConfig(level=logging.INFO)
@@ -87,4 +88,5 @@ client.add_cog(Dua(client))
 client.add_cog(PrayerTimes(client))
 client.add_cog(Recite(client))
 client.add_cog(Meme(client))
+client.add_cog(Trivia(client))
 client.run(config['discord'])
