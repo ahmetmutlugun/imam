@@ -6,7 +6,6 @@ import praw
 import requests
 from discord.ext import commands
 from quran_audio import Recite
-from paginator import PageTest
 from dua import Dua
 from prayer import PrayerTimes
 
@@ -218,5 +217,4 @@ def get_random_question():
 client.add_cog(Dua(client))
 client.add_cog(PrayerTimes(client))
 client.add_cog(Recite(client))
-client.add_cog(PageTest(client))
 client.run(config['discord'])
