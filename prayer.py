@@ -184,7 +184,6 @@ class PrayerTimes(commands.Cog):
         self.client = bot
         self._last_member = None
 
-    # TODO: add a validate location function
     @slash_command(name='location', description="Set your location for prayer commands. imam location <city>")
     async def location(self, ctx, city: discord.Option(str, "Pick a city"),
                        country: discord.Option(str, "Pick a country")):
@@ -192,7 +191,7 @@ class PrayerTimes(commands.Cog):
 
         Parameters
         ----------
-            ctx : interactions.CommandContext
+            ctx :
                 Context from which location was invoked
             city : discord.Option
                  A discord option to specify a city str
@@ -231,15 +230,15 @@ class PrayerTimes(commands.Cog):
             "User location changed to: \nCity: " + city + "\nCountry: " + countryData[country])
 
     @slash_command(name="prayer",description="Display a user-specified prayer time",)
-    async def prayer(self, ctx, prayer_time: Option(str, "Enter a Prayer option", choices=["fajr", "dhuhr", "asr", "maghrib", "isha"])):
+    async def prayer(self, ctx, sub_command: Option(str, "Enter a Prayer option", choices=["fajr", "dhuhr", "asr", "maghrib", "isha", "all"])):
         """Returns user-specified prayer time from a list of prayer times (fajr, dhuhr, etc..) using
         get_prayer_times()
 
         Parameters
         ----------
-            ctx : interactions.CommandContext
+            ctx :
                 Context from which the command was invoked
-            prayer_time : str
+            sub_command : str
                 Sub_command specifying which prayer time to return
         """
         # Get location of the user and prayer times for that location
@@ -250,45 +249,28 @@ class PrayerTimes(commands.Cog):
         # Return error message if time couldn't be found
         if time is None:
             await ctx.respond(errorText)
-        if prayer_time == "fajr":
+        if sub_command == "fajr":
             await ctx.respond("Fajr/Sahur is at " + str(time['Fajr']) + " for " + city)
-        elif prayer_time == "dhuhr":
+        elif sub_command == "dhuhr":
             await ctx.respond("Dhuhr is at " + str(time['Dhuhr']) + " for " + city)
-        elif prayer_time == "asr":
+        elif sub_command == "asr":
             await ctx.respond("Asr is at " + str(time['Asr']) + " for " + city)
-        elif prayer_time == "maghrib":
+        elif sub_command == "maghrib":
             await ctx.respond("Maghrib is at " + str(time['Maghrib']) + " for " + city)
-        elif prayer_time == "isha":
+        elif sub_command == "isha":
             await ctx.respond("Isha is at " + str(time['Isha']) + " for " + city)
+        elif sub_command == "all":
+            string = "Prayer times for " + city + ", " + country + ":\n"
 
-    @slash_command(name='prayer_times', description="Displays all prayer times.")
-    async def prayer_times(self, ctx):
-        """ Returns all prayer times using get_prayer_times()'s prayer_times
-
-        Parameters
-        ----------
-        ctx : interactions.CommandContext
-            Context from which prayer times was invoked
-        """
-        # Set up lists and dictionaries
-        location = get_location(ctx.author.id)  # get user location
-        city = location[0].replace("_", " ")
-        country = location[1].replace("_", " ")
-
-        # Obtains dictionary from get_prayer_times() and reformats it
-        prayer_times = get_prayer_times(city, country)
-        # Creates a returnable string of all the prayer times
-        string = "Prayer times for " + city + ", " + country + ":\n"
-
-        embed = discord.Embed(title="Prayer times for " + city + ", " + country, type='rich', color=0x048c28)
-        embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
-                                                  "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
-        # Add all prayer times as embeds to the main embed
-        for key in prayer_times:
-            string += str(key) + ": " + str(prayer_times[key]) + "\n"
-            embed.add_field(name=str(key) + ":", value=str(prayer_times[key]))
-        # Respond with the embed to ctx
-        await ctx.respond(embed=embed)
+            embed = discord.Embed(title="Prayer times for " + city + ", " + country, type='rich', color=0x048c28)
+            embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
+                                                    "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
+            # Add all prayer times as embeds to the main embed
+            for key in time:
+                string += str(key) + ": " + str(time[key]) + "\n"
+                embed.add_field(name=str(key) + ":", value=str(time[key]))
+            # Respond with the embed to ctx
+            await ctx.respond(embed=embed)
 
     @slash_command(name='prayer_now', description="Displays the current prayer time.")
     async def prayer_now(self, ctx):
@@ -296,7 +278,7 @@ class PrayerTimes(commands.Cog):
 
         Parameters
         ----------
-        ctx : interactions.CommandContext
+        ctx : 
             Context from which prayer_now was invoked
         """
         # Set up lists and dictionaries

@@ -1,3 +1,4 @@
+from email.policy import default
 import json
 import time
 import requests
@@ -6,7 +7,7 @@ import logging
 from random import SystemRandom
 
 import discord
-from discord.commands import slash_command
+from discord.commands import slash_command, Option
 from discord.ext import commands, pages
 
 crypto = SystemRandom()
@@ -91,7 +92,7 @@ class Dua(commands.Cog):
     #  - Add quran page count
 
     @slash_command(name='hadith', description="Sends a hadith")
-    async def hadith(self, ctx, collection: str = "random", number: int = None):
+    async def hadith(self, ctx, collection: Option(str, "Enter a collection option", choices=collection_names, default="random"), number: int = None):
         """ Sends a hadith embed to the context from which it was called
 
         Parameters
@@ -155,7 +156,7 @@ class Dua(commands.Cog):
         page_list = []
         # For each ayah create a new embed and append it to the list of pages
         for page, text in enumerate(final_wrapped):
-            page_list.append(create_hadith_embed(final_number, final_collection, text, page))
+            page_list.append(create_hadith_embed(final_number, final_collection, text, page+1))
 
         # Create the paginator and then return it
         paginator = pages.Paginator(pages=page_list)
@@ -183,7 +184,7 @@ class Dua(commands.Cog):
         await ctx.respond('O Allah! send Your blessing upon Muhammad and the progeny of Muhammad')
 
     @slash_command(name='esma', description="Sends one of Allah\'s names. Chooses randomly if no number is specified.")
-    async def esma(self, ctx, number: int = None):
+    async def esma(self, ctx, number: Option(int, min_value=1, max_value=99, default=None)):
         names = ['ar-Rahman (The Most Gracious)', 'ar-Rahim (The Most Merciful)',
                  'al-Malik (The Sovereign)', 'al-Quddus (The Holy)', 'as-Salam (The Giver of Peace)',
                  'al-Mu\'min (The Granter of Security)', 'al-Muhaymin (The Controller)', 'al-Aziz(The Almighty)',
@@ -231,7 +232,7 @@ class Dua(commands.Cog):
                  'al-Waarith (The Heir)', 'ar-Rashiyd (The Guide to the Right Path)', 'as-Sabour (The Timeless)'
                  ]
 
-        if number is None or number < 1 or number > 99:
+        if number is None:
             response = crypto.choice(names)
         else:
             response = names[number - 1]
