@@ -1,4 +1,5 @@
 import datetime
+import interactions
 import json
 import logging
 import http.client
@@ -181,14 +182,16 @@ class PrayerTimes(commands.Cog):
         self.client = bot
         self._last_member = None
 
+
+    # TODO: add a validate location function
     @slash_command(name='location', description="Set your location for prayer commands. imam location <city>")
-    async def location(self, ctx, city: discord.Option(str, "Pick a city"), country: discord.Option(str, "Pick a country")):
+    async def location(self, ctx: interactions.CommandContext, city: discord.Option(str, "Pick a city"), country: discord.Option(str, "Pick a country")):
         """Changes user's location to their parameter specified location
 
         Parameters
         ----------
-            ctx : 
-                Context
+            ctx : interactions.CommandContext
+                Context from which location was invoked
             city : discord.Option
                  A discord option to specify a city str
             country : discord.Option 
@@ -225,92 +228,74 @@ class PrayerTimes(commands.Cog):
         await ctx.respond(
             "User location changed to: \nCity: " + city + "\nCountry: " + countryData[country])
 
-    @slash_command(name='fajr', description="Displays the fajr time.")
-    async def fajr(self, ctx):
+    @slash_command(
+        name="prayer",
+        description="Display a user-specified prayer time",
+        options=[
+            interactions.Option(
+                name="fajr",
+                description="Displays fajr prayer time",
+                type=interactions.OptionType.SUB_COMMAND
+            ),
+            interactions.Option(
+                name="dhuhr",
+                description="Displays dhuhr prayer time",
+                type=interactions.OptionType.SUB_COMMAND
+            ),
+            interactions.Option(
+                name="asr",
+                description="Displays asr prayer time",
+                type=interactions.OptionType.SUB_COMMAND
+            ),
+            interactions.Option(
+                name="maghrib",
+                description="Displays maghrib prayer time",
+                type=interactions.OptionType.SUB_COMMAND
+            ),
+            interactions.Option(
+                name="isha",
+                description="Displays isha prayer time",
+                type=interactions.OptionType.SUB_COMMAND
+            ),
+        ])
+    async def prayer(self, ctx: interactions.CommandContext, sub_command: str):
+        """Returns user-specified prayer time from a list of prayer times (fajr, dhuhr, etc..) using
+        get_prayer_times()
+
+        Parameters
+        ----------
+            ctx : interactions.CommandContext
+                Context from which the command was invoked
+            sub_command : str
+                Sub_command specifying which prayer time to return
         """
-        Returns fajr prayer time using get_prayer_times()'s prayer_times
-        :param ctx: Context
-        :return: string of fajr prayer time
-        """
+        # Get location of the user and prayer times for that location
         location = get_location(ctx.author.id)  # get user location
         city = location[0].replace("_", " ")
         country = location[1].replace("_", " ")
         time = get_prayer_times(city, country)
+        # Return error message if time couldn't be found
         if time is None:
             await ctx.respond(errorText)
-        else:
+        if sub_command == "fajr":
             await ctx.respond("Fajr/Sahur is at " + str(time['Fajr']) + " for " + city)
-
-    @slash_command(name='dhuhr', description="Displays the dhuhr time.")
-    async def dhuhr(self, ctx):
-        """
-        Returns dhuhr prayer time using get_prayer_times()'s prayer_times
-        :param ctx: Context
-        :return: string of dhuhr prayer time
-        """
-        location = get_location(ctx.author.id)  # get user location
-        city = location[0].replace("_", " ")
-        country = location[1].replace("_", " ")
-        time = get_prayer_times(city, country)
-        if time is None:
-            await ctx.respond(errorText)
-        else:
+        elif sub_command == "dhuhr":
             await ctx.respond("Dhuhr is at " + str(time['Dhuhr']) + " for " + city)
-
-    @slash_command(name='asr', description="Displays the Asr time.")
-    async def asr(self, ctx):
-        """
-        Returns asr prayer time using get_prayer_times()'s prayer_times
-        :param ctx: Context
-        :return: string of asr prayer time
-        """
-        location = get_location(ctx.author.id)  # get user location
-        city = location[0].replace("_", " ")
-        country = location[1].replace("_", " ")
-        time = get_prayer_times(city, country)
-        if time is None:
-            await ctx.respond(errorText)
-        else:
+        elif sub_command == "asr":
             await ctx.respond("Asr is at " + str(time['Asr']) + " for " + city)
-
-    @slash_command(name='maghrib', description="Displays the maghrib time.")
-    async def maghrib(self, ctx):
-        """
-        Returns maghrib prayer time using get_prayer_times()'s prayer_times
-        :param ctx: Context
-        :return: string of maghrib prayer time
-        """
-        location = get_location(ctx.author.id)  # get user location
-        city = location[0].replace("_", " ")
-        country = location[1].replace("_", " ")
-        time = get_prayer_times(city, country)
-        if time is None:
-            await ctx.respond(errorText)
-        else:
+        elif sub_command == "maghrib":
             await ctx.respond("Maghrib is at " + str(time['Maghrib']) + " for " + city)
-
-    @slash_command(name='isha', description="Displays the isha time.")
-    async def isha(self, ctx):
-        """
-        Returns isha prayer time using get_prayer_times()'s prayer_times
-        :param ctx: Context
-        :return: string of isha prayer time
-        """
-        location = get_location(ctx.author.id)  # get user location
-        city = location[0].replace("_", " ")
-        country = location[1].replace("_", " ")
-        time = get_prayer_times(city, country)
-        if time is None:
-            await ctx.respond(errorText)
-        else:
+        elif sub_command == "isha":
             await ctx.respond("Isha is at " + str(time['Isha']) + " for " + city)
 
     @slash_command(name='prayer_times', description="Displays all prayer times.")
-    async def prayer_times(self, ctx):
-        """
-        Returns all prayer times as a string using get_prayer_times()
-        :param ctx: Context
-        :return: string of all prayer times
+    async def prayer_times(self, ctx : interactions.CommandContext):
+        """ Returns all prayer times using get_prayer_times()'s prayer_times
+
+        Parameters
+        ----------
+        ctx : interactions.CommandContext
+            Context from which prayer times was invoked
         """
         # Set up lists and dictionaries
         location = get_location(ctx.author.id)  # get user location
@@ -325,24 +310,27 @@ class PrayerTimes(commands.Cog):
         embed = discord.Embed(title="Prayer times for " + city + ", " + country, type='rich', color=0x048c28)
         embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                                   "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
-
+        # Add all prayer times as embeds to the main embed
         for key in prayer_times:
             string += str(key) + ": " + str(prayer_times[key]) + "\n"
             embed.add_field(name=str(key) + ":", value=str(prayer_times[key]))
+        # Respond with the embed to ctx
         await ctx.respond(embed=embed)
 
     @slash_command(name='prayer_now', description="Displays the current prayer time.")
-    async def pnow(self, ctx):
-        """
-        Returns the current and next prayer times, and the time left until the next prayer time
-        :param ctx: Context
-        :return: String of current & next prayer time + time left
+    async def prayer_now(self, ctx: interactions.CommandContext):
+        """Returns the current and next prayer times, and the time left until the next prayer time
+
+        Parameters
+        ----------
+        ctx : interactions.CommandContext
+            Context from which prayer_now was invoked
         """
         # Set up lists and dictionaries
         location = get_location(ctx.author.id)  # get user location
         city = location[0].replace("_", " ")
         country = location[1].replace("_", " ")
-        # Obtains dictionary from webscrape() and reformats it
+        # Obtains dictionary from get_prayer_times() and reformats it
         prayer_times = get_prayer_times(city, country)
 
         # Get the local time in seconds
