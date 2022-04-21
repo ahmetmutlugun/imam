@@ -112,7 +112,7 @@ class MusicPlayer:
 
 
 def quran_audio_api(surah, ayah):
-    f = open("data/quran_audio.txt", "r+")
+    f = open("../data/quran_audio.txt", "r+")
     data = json.load(f)
     f.close()
 
@@ -142,7 +142,7 @@ def create_quran_embed(surah: int, ayah: int) -> discord.Embed:
         An embed containing the quran surah and ayah
 
     """  
-    f = open('data/en_hilali.json', 'r+')
+    f = open('../data/en_hilali.json', 'r+')
     data = json.load(f)
     f.close()
 

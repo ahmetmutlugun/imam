@@ -119,6 +119,6 @@ def create_trivia_embed() -> tuple:
 
 
 def get_random_question():
-    with open('data/questions.json', 'r+') as f:
+    with open('../data/questions.json', 'r+') as f:
         data = json.load(f)
     return data[str(srandom.choice(range(0, len(data))))]

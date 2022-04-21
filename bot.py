@@ -3,11 +3,11 @@ import logging
 from random import SystemRandom
 import discord
 from discord.ext import commands
-from meme import Meme
-from quran_audio import Recite
-from dua import Dua
-from prayer import PrayerTimes
-from trivia import Trivia
+from cogs.meme import Meme
+from cogs.quran_audio import Recite
+from cogs.dua import Dua
+from cogs.prayer import PrayerTimes
+from cogs.trivia import Trivia
 
 
 # Load logger, configs, and random object
@@ -85,9 +85,9 @@ async def changelog(ctx):
     changelogs.close()
 
 
-client.add_cog(Dua(client))
-client.add_cog(PrayerTimes(client))
+client.add_cog(Dua(client, config))
+client.add_cog(PrayerTimes(client, config))
 client.add_cog(Recite(client))
-client.add_cog(Meme(client))
+client.add_cog(Meme(client, config))
 client.add_cog(Trivia(client))
 client.run(config['discord'])
