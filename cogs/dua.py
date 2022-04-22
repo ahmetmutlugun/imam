@@ -1,4 +1,5 @@
 import json
+import os
 import time
 import requests
 import textwrap
@@ -15,9 +16,6 @@ srandom = SystemRandom()
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.INFO)
-
-with open('../data/config.json', 'r+') as f:
-    config = json.load(f)
 
 collection_names = {
     'ahmad',
@@ -72,18 +70,20 @@ def create_hadith_embed(number: int, collection: str, hadith: str, page: int, gr
     embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                               "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
     embed.add_field(name=f"{collection} {number}  Page {page}", value=hadith)
-    embed.add_field(name=f"Grade", value=grade)
+    
+    embed.add_field(name="Grade", value=grade)
     return embed
 
 
 class Dua(commands.Cog):
-    def __init__(self, client):
+    def __init__(self, client, config):
         """Prayer
         Create Prayer Cog
         param: client bot client
         """
         self.client = client
         self._last_member = None
+        self.config = config
 
     # TODO:
     #  - Add fasting days count
@@ -113,7 +113,7 @@ class Dua(commands.Cog):
         if collection == "random":
             # Send request to sunnah.com api
             r = requests.get(url="https://api.sunnah.com/v1/hadiths/random",
-            headers={"X-API-Key": config['sunnah']})
+            headers={"X-API-Key": self.config['sunnah']})
             data = r.json()
             final_hadith = process_hadith(data)
             final_wrapped = textwrap.wrap(final_hadith, 1024)
@@ -141,7 +141,8 @@ class Dua(commands.Cog):
         else:
             try:
                 r = requests.get(url=f"https://api.sunnah.com/v1/collections/{collection}/hadiths/{number}",
-                                 headers={"X-API-Key": config['sunnah']})
+
+                                 headers={"X-API-Key": self.config['sunnah']})
                 data = r.json()
                 # Clean the JSON response
                 final_hadith = process_hadith(data)

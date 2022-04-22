@@ -10,29 +10,27 @@ from discord.ext import commands
 
 # Start logger and load configs
 logging.basicConfig(level=logging.INFO)
-with open('../data/config.json', 'r+') as f:
-    config = json.load(f)
 
 # Create random object
 srandom = SystemRandom()
 
-# Create reddit client
-reddit = asyncpraw.Reddit(client_id=config['reddit'],
-                          client_secret=config['redditsecret'],
-                          user_agent="u/sharpaxeyt")
-
 
 class Meme(commands.Cog):
-    def __init__(self, client):
-        """Creates a meme cog
+    def __init__(self, client, config):
+        """
+        Creates a meme cog
 
         Parameter
         ---------
-        client : 
+        client :
             bot client
         """
         self.client = client
         self._last_member = None
+        self.config = config
+        self.reddit = asyncpraw.Reddit(client_id=self.config['reddit'],
+                                       client_secret=self.config['redditsecret'],
+                                       user_agent="u/sharpaxeyt")
 
     @slash_command(name='meme', description="Sends a meme from r/izlam")
     async def meme(self, ctx):
@@ -41,7 +39,7 @@ class Meme(commands.Cog):
             subs = ['izlam', 'MemriTVmemes']
             discord_subreddit = srandom.choice(subs)
             try:
-                subreddit = await reddit.subreddit(discord_subreddit)
+                subreddit = await self.reddit.subreddit(discord_subreddit)
                 posts = [post async for post in subreddit.hot(limit=20)]
                 random_post_number = srandom.choice(range(0, 20))
                 submission = posts[random_post_number]

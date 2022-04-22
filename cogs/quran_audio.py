@@ -9,6 +9,7 @@ import logging
 
 import discord
 from discord.ext import commands
+
 from discord.commands import slash_command
 import itertools
 import traceback
@@ -22,6 +23,7 @@ FFMPEG_OPTIONS = {
     'before_options': '-nostdin -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
     'options': '-vn -loglevel panic'
 }
+
 
 class VoiceConnectionError(commands.CommandError):
     """Custom Exception class for connection errors."""
@@ -110,7 +112,9 @@ class MusicPlayer:
 
 
 def quran_audio_api(surah, ayah):
-    f = open("data/quran_audio.txt", "r+")
+
+    f = open("../data/quran_audio.txt", "r+")
+
     data = json.load(f)
     f.close()
 
@@ -118,6 +122,45 @@ def quran_audio_api(surah, ayah):
         if key['verse_key'] == f"{surah}:{ayah}":
             return f"https://download.quranicaudio.com/verses/{key['url']}"
     return
+
+
+def create_quran_embed(surah: int, ayah: int) -> discord.Embed:
+    """ Creates an embed for a quran surah and ayah
+
+    Parameters
+    ----------
+    surah : int
+        The surah number
+    ayah: int
+        The ayah number of the surah
+    
+    Raises
+    ------
+    IndexError:
+        Raised if the surah number is invalid or the ayah number
+    
+    Returns
+    -------
+    embed: discord.Embed
+        An embed containing the quran surah and ayah
+
+    """  
+    f = open('../data/en_hilali.json', 'r+')
+    data = json.load(f)
+    f.close()
+
+    try:
+        surah_name = data["data"]["surahs"][surah - 1]["englishName"]
+        text = data["data"]["surahs"][surah - 1]["ayahs"][ayah - 1]["text"]
+    except IndexError as e:
+        raise e 
+
+    embed = discord.Embed(title=f"Surah {surah_name}", type='rich', color=0x048c28)
+    embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
+                                              "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
+    embed.add_field(name="Ayah " + str(ayah), value=text)
+
+    return embed
 
 
 class Recite(commands.Cog):
@@ -338,3 +381,45 @@ class Recite(commands.Cog):
         except Exception:
             await ctx.respond("I am not currently connected to any channel.", delete_after=20)
 
+    @slash_command(name="quran")
+    async def quran(self, ctx, surah_and_ayah: str):
+        logger.info("Handling /quran")
+        """ Creates a series of quran embeds for a given surah starting at ayah 1
+
+        Parameters
+        ---------
+        ctx : 
+            A context
+        
+        surah_and_ayah : str
+            A string containing a surah and an ayah
+        """
+
+        # Retrieve the parameters
+        array = surah_and_ayah.split(":")
+        surah = int(array[0])
+        current_ayah = int(array[1])
+
+        # Try creating an embed, throw an index error if the surah was invalid
+        try:
+           create_quran_embed(surah, current_ayah)
+        except IndexError:
+            await ctx.respond("Could not find that surah/ayah combination. Please let us know is this is en error.")
+            logger.error("Could not find that surah/ayah combination.")
+            return
+
+        # Start a timer and initialize a list of pages
+        start = time.time()
+        page_list = []
+        # For each ayah create a new embed and append it to the list of pages
+        for i in range(1, 286):
+            try:
+                page_list.append(create_quran_embed(surah, i))
+            except IndexError as e:
+                logging.error("Index error in /quran %s", e)
+                break
+        # Create the paginator and then return it
+        paginator = pages.Paginator(pages=page_list)
+        await paginator.respond(ctx.interaction, ephemeral=False)
+
+        logger.info(time.time() - start)

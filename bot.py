@@ -80,8 +80,8 @@ async def changelog(ctx):
     changelogs.close()
 
 
-client.add_cog(Dua(client))
-client.add_cog(PrayerTimes(client))
+client.add_cog(Dua(client, config))
+client.add_cog(PrayerTimes(client, config))
 client.add_cog(Recite(client))
 client.add_cog(Quran_Pages(client))
 client.add_cog(Meme(client))

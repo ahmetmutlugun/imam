@@ -11,18 +11,15 @@ from discord.commands import slash_command, Option
 
 errorText = "No prayer time found for your location. Please set a new location using imam location <city>"
 
-with open('../data/config.json', 'r+') as f:
-    config = json.load(f)
-
 
 def set_user_data(user_id, data_name, data_value):
     try:
-        f = open('data/data.json', 'r+')
+        f = open('../data/data.json', 'r+')
         data = json.load(f)
         f.close()
         if user_id in data:
             data[str(user_id)][data_name] = data_value
-        with open('data/data.json', 'w') as json_file:
+        with open('../data/data.json', 'w') as json_file:
             json.dump(data, json_file, indent=4)
             json_file.truncate()
     except Exception as e:
@@ -30,7 +27,8 @@ def set_user_data(user_id, data_name, data_value):
 
 
 def get_location(author_id):
-    """Get location
+    """
+    Get location
     Returns location of a user
     :param author_id: user id
     :return: city - user's city as string
@@ -88,7 +86,7 @@ def get_prayer_times(city: str, country: str):
 
     Returns
     -------
-    pt : dict[str, str] 
+    pt : dict[str, str]
         dictionary of all prayer times
     """
 
@@ -104,15 +102,17 @@ def get_prayer_times(city: str, country: str):
     return ptl
 
 
-def calc_local_time_offset(city: str, country: str) -> str:
-    """Gets the local utc offset from positionstack's API
-
+def calc_local_time_offset(city: str, country: str, config: dict) -> str:
+    """
+    Gets the local utc offset from positionstack's API
     Parameters
     ----------
     city : str
-        A city name 
+        A city name
     country : str
         A country name
+    config : dict
+        config.json
 
     Returns
     -------
@@ -136,16 +136,17 @@ def calc_local_time_offset(city: str, country: str) -> str:
         # Obtain the utc offset from the json response
         data = res.read()
         return json.loads(data.decode('utf-8'))['data'][0]['timezone_module']['offset_sec']
-    except Exception:
+    except Exception as e:
+        logging.error(e)
         return None
 
 
 def get_local_time_offset(author_id) -> int:
-    """Returns local time offset of a user from data.json
-    
+    """
+    Returns local time offset of a user from data.json
     Parameters
     ---------
-    author_id : 
+    author_id :
         user id
     
     Returns
@@ -166,12 +167,12 @@ def get_local_time_offset(author_id) -> int:
 
 
 def create_user(userid: str, iman: int, tovbe: int, city: str, elham: int, utc_offset: int, country: str):
-    """ Creates a user in the data.json
-
+    """
+    Creates a user in the data.json
     Parameters
     ---------- 
-        userid : str 
-           A user's discord id 
+        userid : str
+           A user's discord id
         iman : int
             A user's iman as determined by the bot
         tovbe : int
@@ -199,17 +200,19 @@ def create_user(userid: str, iman: int, tovbe: int, city: str, elham: int, utc_o
 
 class PrayerTimes(commands.Cog):
 
-    def __init__(self, bot):
+    def __init__(self, bot, config):
         """
         Create a PrayerTimes cog
+
         :param bot client
         """
         self.client = bot
         self._last_member = None
-
+        
     @slash_command(name='location', description="Set your location for prayer commands.")
     async def location(self, ctx, city: discord.Option(str, "Pick a city"), country: discord.Option(str, "Pick a country", choices=countries)):
-        """Changes user's location to their parameter specified location
+        """
+        Changes user's location to their parameter specified location
 
         Parameters
         ----------
@@ -217,8 +220,8 @@ class PrayerTimes(commands.Cog):
                 Context from which location was invoked
             city : discord.Option
                  A discord option to specify a city str
-            country : discord.Option 
-                A discord option to specify a country str 
+            country : discord.Option
+                A discord option to specify a country str
         """
         # open data.json file to read later
         with open('../data/data.json', 'r+') as f:
@@ -243,6 +246,7 @@ class PrayerTimes(commands.Cog):
                 data[str(ctx.author.id)]['city'] = city
                 data[str(ctx.author.id)]['utc_offset'] = utc_offset
                 data[str(ctx.author.id)]['country'] = country
+
                 with open('../data/data.json', 'w') as json_file:
                     json.dump(data, json_file, indent=4)
         except Exception as e:
@@ -251,12 +255,13 @@ class PrayerTimes(commands.Cog):
         await ctx.respond(
             "User location changed to: \nCity: " + city + "\nCountry: " + country)
 
+
     @slash_command(name="prayer", description="Display a user-specified prayer time", )
     async def prayer(self, ctx, sub_command: Option(str, "Enter a Prayer option",
                                                     choices=["fajr", "dhuhr", "asr", "maghrib", "isha", "all"])):
-        """Returns user-specified prayer time from a list of prayer times (fajr, dhuhr, etc..) using
+        """
+        Returns user-specified prayer time from a list of prayer times (fajr, dhuhr, etc..) using
         get_prayer_times()
-
         Parameters
         ----------
             ctx :
@@ -297,11 +302,11 @@ class PrayerTimes(commands.Cog):
 
     @slash_command(name='prayer_now', description="Displays the current prayer time.")
     async def prayer_now(self, ctx):
-        """Returns the current and next prayer times, and the time left until the next prayer time
-
+        """
+        Returns the current and next prayer times, and the time left until the next prayer time
         Parameters
         ----------
-        ctx : 
+        ctx :
             Context from which prayer_now was invoked
         """
         # Set up lists and dictionaries
