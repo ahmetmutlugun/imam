@@ -5,11 +5,11 @@
 import asyncio
 import json
 import sys
-import time
 import logging
 
 import discord
-from discord.ext import commands, pages
+from discord.ext import commands
+
 from discord.commands import slash_command
 import itertools
 import traceback
@@ -112,7 +112,9 @@ class MusicPlayer:
 
 
 def quran_audio_api(surah, ayah):
+
     f = open("../data/quran_audio.txt", "r+")
+
     data = json.load(f)
     f.close()
 
@@ -120,6 +122,7 @@ def quran_audio_api(surah, ayah):
         if key['verse_key'] == f"{surah}:{ayah}":
             return f"https://download.quranicaudio.com/verses/{key['url']}"
     return
+
 
 def create_quran_embed(surah: int, ayah: int) -> discord.Embed:
     """ Creates an embed for a quran surah and ayah

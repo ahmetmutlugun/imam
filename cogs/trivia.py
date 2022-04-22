@@ -9,6 +9,7 @@ from discord.ext import commands
 srandom = SystemRandom()
 
 
+
 class TriviaButton(discord.ui.Button):
     def __init__(self, ctx, label, is_answer, embed):
 
@@ -24,7 +25,7 @@ class TriviaButton(discord.ui.Button):
         if self.is_answer:
             self.style = discord.ButtonStyle.success
             await interaction.edit_original_message("That was the right answer!")
-        # Otherwise, the button should change to a danger style and send a follow up message
+        # Otherwise, the button should change to a danger style and send a follow up message)
         else:
             self.style = discord.ButtonStyle.danger
             await interaction.followup.send("That was not the right answer")
@@ -40,7 +41,7 @@ class TriviaView(View):
             ctx :
                 Context from which view is called to be displayed
             correct_answer : str
-                THe correct answer to the trivia question
+                The correct answer to the trivia question
             answers : dict[str][bool]
                 A dictionary of strings and booleans of the form:
                 {'a': true, 'b': false, 'c': false, 'd': false}
@@ -114,7 +115,7 @@ def create_trivia_embed() -> tuple:
     for let, text in zip('abcd', options):
         embed.add_field(name=f"*Option {let}", value=text, inline=False)
         buttons[let] = (text == correct_answer)
-
+    
     return embed, buttons, data[data["correct_answer"]]
 
 

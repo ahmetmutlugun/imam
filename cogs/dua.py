@@ -70,6 +70,7 @@ def create_hadith_embed(number: int, collection: str, hadith: str, page: int, gr
     embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                               "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
     embed.add_field(name=f"{collection} {number}  Page {page}", value=hadith)
+    
     embed.add_field(name="Grade", value=grade)
     return embed
 
@@ -140,6 +141,7 @@ class Dua(commands.Cog):
         else:
             try:
                 r = requests.get(url=f"https://api.sunnah.com/v1/collections/{collection}/hadiths/{number}",
+
                                  headers={"X-API-Key": self.config['sunnah']})
                 data = r.json()
                 # Clean the JSON response
