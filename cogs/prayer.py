@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 import http.client
+from random import choices
 import urllib.parse
 import discord
 import requests
@@ -10,9 +11,8 @@ from discord.commands import slash_command, Option
 
 errorText = "No prayer time found for your location. Please set a new location using imam location <city>"
 
-f = open('data/config.json', 'r+')
-config = json.load(f)
-f.close()
+with open('../data/config.json', 'r+') as f:
+    config = json.load(f)
 
 
 def set_user_data(user_id, data_name, data_value):
@@ -35,9 +35,8 @@ def get_location(author_id):
     :param author_id: user id
     :return: city - user's city as string
     """
-    f = open('data/data.json', 'r+')
-    data = json.load(f)
-    f.close()
+    with open('../data/data.json', 'r+') as f:
+        data = json.load(f)
     try:
         if str(author_id) in data:
             city = data[str(author_id)]['city']
@@ -48,6 +47,33 @@ def get_location(author_id):
 
     except KeyError:
         return ['Cupertino', 'United States of America']
+
+def get_countries() -> list:
+    with open('../data/countryCodes.json') as f:
+        data = json.load(f)
+    
+    return list(data.values())
+
+countries = get_countries()
+
+
+def format_city(city: str) -> str:
+    """ Takes a string of form 'foo bar func' and outputs a string of
+    form 'FooBarFunc'
+
+    Parameter
+    ---------
+    city : str
+        Unformatted city name
+    
+    Returns
+    -------
+    str :
+        Formatted city name
+    """
+    new_city = city.lower()
+    new_city = city.split()
+    return ''.join([c.capitalize() for c in new_city])
 
 
 def get_prayer_times(city: str, country: str):
@@ -127,7 +153,7 @@ def get_local_time_offset(author_id) -> int:
     utc_offset : int
         UTC offset for the user
     """
-    with open('data/data.json', 'r+') as f:
+    with open('../data/data.json', 'r+') as f:
         data = json.load(f)
     try:
         if str(author_id) in data:
@@ -159,7 +185,7 @@ def create_user(userid: str, iman: int, tovbe: int, city: str, elham: int, utc_o
         country : str
             A user's country
     """
-    with open('data/data.json', 'r+') as f:
+    with open('../data/data.json', 'r+') as f:
         data = json.load(f)
 
     if userid not in data:  # see if user doesn't have a saved location
@@ -167,7 +193,7 @@ def create_user(userid: str, iman: int, tovbe: int, city: str, elham: int, utc_o
         new_user = {"imam": iman, "tovbe": tovbe, "city": city, "elham": elham, "utc_offset": utc_offset,
                     "country": country}
         data[userid] = new_user
-        with open('data/data.json', 'w') as json_file:  # write to data.json
+        with open('../data/data.json', 'w') as json_file:  # write to data.json
             json.dump(data, json_file, indent=4)
 
 
@@ -181,9 +207,8 @@ class PrayerTimes(commands.Cog):
         self.client = bot
         self._last_member = None
 
-    @slash_command(name='location', description="Set your location for prayer commands. imam location <city>")
-    async def location(self, ctx, city: discord.Option(str, "Pick a city"),
-                       country: discord.Option(str, "Pick a country")):
+    @slash_command(name='location', description="Set your location for prayer commands.")
+    async def location(self, ctx, city: discord.Option(str, "Pick a city"), country: discord.Option(str, "Pick a country", choices=countries)):
         """Changes user's location to their parameter specified location
 
         Parameters
@@ -196,19 +221,19 @@ class PrayerTimes(commands.Cog):
                 A discord option to specify a country str 
         """
         # open data.json file to read later
-        with open('data/data.json', 'r+') as f:
+        with open('../data/data.json', 'r+') as f:
             data = json.load(f)
 
-        with open('data/countyCodes.json', 'r+') as cc:
-            countryData = json.load(cc)
-        if country not in countryData:
-            await ctx.respond("Please enter a valid country code.")
+        if country not in countries:
+            await ctx.respond("Please enter a valid country.")
             return
 
+        # Format the city properly for the API
+        formatted_city = format_city(city)
         # Get the local time offset for the specified city
-        utc_offset = calc_local_time_offset(city, country)
+        utc_offset = calc_local_time_offset(formatted_city, country)
         if utc_offset is None:
-            await ctx.respond("Your location is invalid. Please use \"\\location <CityName> <CountryName>\"")
+            await ctx.respond("Your location is invalid. Please use \"\\location <City Name> <Country Name>\"")
             return
 
         try:
@@ -217,14 +242,14 @@ class PrayerTimes(commands.Cog):
             else:
                 data[str(ctx.author.id)]['city'] = city
                 data[str(ctx.author.id)]['utc_offset'] = utc_offset
-                data[str(ctx.author.id)]['country'] = countryData[country]
-                with open('data/data.json', 'w') as json_file:
+                data[str(ctx.author.id)]['country'] = country
+                with open('../data/data.json', 'w') as json_file:
                     json.dump(data, json_file, indent=4)
         except Exception as e:
             logging.error(e)
             print(e)
         await ctx.respond(
-            "User location changed to: \nCity: " + city + "\nCountry: " + countryData[country])
+            "User location changed to: \nCity: " + city + "\nCountry: " + country)
 
     @slash_command(name="prayer", description="Display a user-specified prayer time", )
     async def prayer(self, ctx, sub_command: Option(str, "Enter a Prayer option",

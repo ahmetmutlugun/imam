@@ -10,9 +10,8 @@ from discord.ext import commands
 
 # Start logger and load configs
 logging.basicConfig(level=logging.INFO)
-f = open('data/config.json', 'r+')
-config = json.load(f)
-f.close()
+with open('../data/config.json', 'r+') as f:
+    config = json.load(f)
 
 # Create random object
 srandom = SystemRandom()

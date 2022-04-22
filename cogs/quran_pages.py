@@ -59,7 +59,7 @@ def get_surahs() -> list:
     with open("./data/surahs.json", "w") as f:
         data = json.load(f)
 
-    return data.values()
+    return list(data.values())
 
 def find_surah_id(surah : str) -> int:
     """ Finds a given surah's id

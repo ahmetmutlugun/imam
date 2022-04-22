@@ -16,9 +16,8 @@ srandom = SystemRandom()
 logger = logging.getLogger('discord')
 logger.setLevel(logging.INFO)
 
-f = open('data/config.json', 'r+')
-config = json.load(f)
-f.close()
+with open('../data/config.json', 'r+') as f:
+    config = json.load(f)
 
 collection_names = {
     'ahmad',

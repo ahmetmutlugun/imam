@@ -3,12 +3,7 @@ import logging
 from random import SystemRandom
 import discord
 from discord.ext import commands
-from meme import Meme
-from quran_audio import Recite
-from dua import Dua
-from prayer import PrayerTimes
-from quran_pages import Quran_Pages
-from trivia import Trivia
+from cogs import Meme, Recite, Dua, PrayerTimes, Quran_Pages, Trivia
 
 # Load logger, configs, and random object
 logging.basicConfig(level=logging.INFO)
