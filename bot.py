@@ -58,14 +58,14 @@ async def _ping(ctx):  # Defines a new "context" (ctx) command called "ping."
 async def pp(ctx, member: discord.Member = None):
     if member is None:
         embed = discord.Embed(title="Here is your profile picture:", type='rich', color=0x048c28)
-        embed.set_image(url=ctx.author.avatar_url)
+        embed.set_image(url=ctx.author.avatar)
         embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                                   "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
         await ctx.respond(embed=embed)
     else:
         embed = discord.Embed(title="Here is the profile picture of " + member.display_name + ":", type='rich',
                               color=0x048c28)
-        embed.set_image(url=member.avatar_url)
+        embed.set_image(url=member.avatar)
         embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                                   "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
         await ctx.respond(embed=embed)
@@ -81,6 +81,19 @@ async def changelog(ctx):
     await ctx.respond(embed=embed)
     changelogs.close()
 
+
+@client.slash_command(name='help', description="Shows the latest changes.")
+async def help(ctx):
+    embed = discord.Embed(title="List of /commands", type='rich', color=0x048c28)
+    embed.add_field(name="Main:", value="ping, changelog, pp, welcome, help")
+    embed.add_field(name="Dua:", value="hadith, basmalah, pray, salawat, esma, takbeer, dhikr, salaam")
+    embed.add_field(name="Meme:", value="meme")
+    embed.add_field(name="Prayer:", value="location, prayer, prayer_now")
+    embed.add_field(name="Quran:", value="quran")
+    embed.add_field(name="Trivia:", value="trivia")
+    embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
+                                              "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
+    await ctx.respond(embed=embed)
 
 client.add_cog(Dua(client, config))
 client.add_cog(PrayerTimes(client, config))
