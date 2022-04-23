@@ -1,5 +1,5 @@
 .idea/
-data/log.log
+cogs/data/log.log
 # dotenv
 .env
 .json
@@ -50,9 +50,9 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-data/data.json
-data/keys/token.env
+cogs/data/data.json
+cogs/data/keys/token.env
 config.json
-data/config.json
-data/en_hilali.json
-data/quran_audio.txt
+cogs/data/config.json
+cogs/data/en_hilali.json
+cogs/data/quran_audio.txt

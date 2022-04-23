@@ -70,7 +70,7 @@ def create_hadith_embed(number: int, collection: str, hadith: str, page: int, gr
     embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                               "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
     embed.add_field(name=f"{collection} {number}  Page {page}", value=hadith)
-    
+
     embed.add_field(name="Grade", value=grade)
     return embed
 
@@ -82,7 +82,6 @@ class Dua(commands.Cog):
         param: client bot client
         """
         self.client = client
-        self._last_member = None
         self.config = config
 
     # TODO:
@@ -107,7 +106,6 @@ class Dua(commands.Cog):
         number: int
             Specifies the hadith number, set to None by default.
         """
-        await ctx.respond("This command is under construction!")
 
         # If no collection was specified get a random hadith
         if collection == "random":
@@ -167,23 +165,23 @@ class Dua(commands.Cog):
             page_list.append(create_hadith_embed(final_number, final_collection, text, page+1, final_grade))
 
         # Create the paginator and then return it
-        paginator = pages.Paginator(pages=page_list)
+        paginator = pages.Paginator(pages=page_list, timeout=3600, author_check=True, disable_on_timeout=True)
         await paginator.respond(ctx.interaction, ephemeral=False)
 
         logger.info(time.time() - start)
 
-    @slash_command(name='besmele', description="Sends a besmele.")
-    async def besmele(self, ctx):
+    @slash_command(name='basmalah', description="Sends a besmele.")
+    async def basmalah(self, ctx):
         await ctx.respond('Bismillâhirrahmânirrahîm')
 
     @slash_command(name='pray', description="[@mention] pray for a user or a group of users.")
-    async def dua(self, ctx, user_: discord.Role or discord.Member):
-        duas = [f'O Allah, Have mercy on {user_.mention} ',
-                f'O Allah, Bless {user_.mention} and his family ',
-                f'O Allah, Grant {user_.mention} passage into Paradise ',
-                f'O Allah, Protect {user_.mention} from Your Wrath ',
-                f'O Allah, Forgive {user_.mention} of his sins '
-                f'O Allah, Ease {user_.mention} \'s mind '
+    async def dua(self, ctx, user: discord.Member):
+        duas = [f'O Allah, Have mercy on {user.mention} ',
+                f'O Allah, Bless {user.mention} and his family ',
+                f'O Allah, Grant {user.mention} passage into Paradise ',
+                f'O Allah, Protect {user.mention} from Your Wrath ',
+                f'O Allah, Forgive {user.mention} of his sins '
+                f'O Allah, Ease {user.mention} \'s mind '
                 ]
         await ctx.respond(srandom.choice(duas))
 
@@ -192,7 +190,8 @@ class Dua(commands.Cog):
         await ctx.respond('O Allah! send Your blessing upon Muhammad and the progeny of Muhammad')
 
     @slash_command(name='esma', description="Sends one of Allah\'s names. Chooses randomly if no number is specified.")
-    async def esma(self, ctx, number: Option(int, min_value=1, max_value=99, default=None)):
+    async def esma(self, ctx, number: Option(int, "Pick a number of leve empty for a random one.", name="number",
+                                             default=-1, min_value=1, max_value=99)):
         names = ['ar-Rahman (The Most Gracious)', 'ar-Rahim (The Most Merciful)',
                  'al-Malik (The Sovereign)', 'al-Quddus (The Holy)', 'as-Salam (The Giver of Peace)',
                  'al-Mu\'min (The Granter of Security)', 'al-Muhaymin (The Controller)', 'al-Aziz(The Almighty)',
@@ -250,13 +249,13 @@ class Dua(commands.Cog):
     @slash_command(name='takbeer', description="Takbeer!")
     async def takbeer(self, ctx):
         await ctx.respond("Allahuakbar")
-    
+
     @slash_command(name='dhikr', description="Sends a reminder")
-    async def dhikr(ctx):
+    async def dhikr(self, ctx):
         await ctx.respond(
             "Indeed, it is We (Allah) who created humankind and fully know what their souls whisper to them, and We are closer to "
             "them than their jugular vein (By His knowledge). (Qaf , ayah 16)")
 
     @slash_command(name='salaam', description="Send a greeting message.")
-    async def salaam(ctx):
+    async def salaam(self, ctx):
         await ctx.respond(' wa ʿalaykumu s-salām')

@@ -72,11 +72,9 @@ class Trivia(commands.Cog):
             bot client
         """
         self.client = client
-        self._last_member = None
 
     @slash_command(name='trivia', description="Asks a random islamic trivia question.")
     async def trivia(self, ctx):
-        await ctx.respond("This command is in construction!")
 
         # Create embed
         embed, buttons, correct_answer = create_trivia_embed()
@@ -120,6 +118,6 @@ def create_trivia_embed() -> tuple:
 
 
 def get_random_question():
-    with open('../data/questions.json', 'r+') as f:
+    with open('data/questions.json', 'r+') as f:
         data = json.load(f)
     return data[str(srandom.choice(range(0, len(data))))]

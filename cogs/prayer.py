@@ -1,25 +1,26 @@
 import datetime
+import http.client
 import json
 import logging
-import http.client
-from random import choices
+import os
 import urllib.parse
+
 import discord
 import requests
-from discord.ext import commands
 from discord.commands import slash_command, Option
+from discord.ext import commands
 
 errorText = "No prayer time found for your location. Please set a new location using imam location <city>"
 
 
 def set_user_data(user_id, data_name, data_value):
     try:
-        f = open('../data/data.json', 'r+')
+        f = open(os.getcwd() + '/cogs/data/data.json', 'r+')
         data = json.load(f)
         f.close()
         if user_id in data:
             data[str(user_id)][data_name] = data_value
-        with open('../data/data.json', 'w') as json_file:
+        with open(os.getcwd() + '/cogs/data/data.json', 'w') as json_file:
             json.dump(data, json_file, indent=4)
             json_file.truncate()
     except Exception as e:
@@ -33,7 +34,7 @@ def get_location(author_id):
     :param author_id: user id
     :return: city - user's city as string
     """
-    with open('../data/data.json', 'r+') as f:
+    with open(os.getcwd() + '/cogs/data/data.json', 'r+') as f:
         data = json.load(f)
     try:
         if str(author_id) in data:
@@ -46,16 +47,24 @@ def get_location(author_id):
     except KeyError:
         return ['Cupertino', 'United States of America']
 
-def get_countries() -> list:
-    with open('../data/countryCodes.json') as f:
+
+def get_countries(ctx: discord.AutocompleteContext) -> list:
+    with open(os.getcwd() + '/cogs/data/countryCodes.json') as f:
         data = json.load(f)
-    
-    return list(data.values())
 
-countries = get_countries()
+    matching_items = []
+    for item in list(data.values()):
+        item_list = ctx.value.lower().split(" ")
+        failed = False
+        for _ in item_list:
+            if _ not in item.lower():
+                failed = True
+        if not failed:
+            matching_items.append(item)
+    return matching_items
 
 
-def format_city(city: str) -> str:
+def format_city(city: str | Option) -> str:
     """ Takes a string of form 'foo bar func' and outputs a string of
     form 'FooBarFunc'
 
@@ -69,8 +78,7 @@ def format_city(city: str) -> str:
     str :
         Formatted city name
     """
-    new_city = city.lower()
-    new_city = city.split()
+    new_city = city.lower().split()
     return ''.join([c.capitalize() for c in new_city])
 
 
@@ -102,7 +110,7 @@ def get_prayer_times(city: str, country: str):
     return ptl
 
 
-def calc_local_time_offset(city: str, country: str, config: dict) -> str:
+def calc_local_time_offset(city: str, country: str | Option, config: dict):
     """
     Gets the local utc offset from positionstack's API
     Parameters
@@ -154,7 +162,7 @@ def get_local_time_offset(author_id) -> int:
     utc_offset : int
         UTC offset for the user
     """
-    with open('../data/data.json', 'r+') as f:
+    with open(os.getcwd() + '/cogs/data/data.json', 'r+') as f:
         data = json.load(f)
     try:
         if str(author_id) in data:
@@ -166,7 +174,7 @@ def get_local_time_offset(author_id) -> int:
         return -25200
 
 
-def create_user(userid: str, iman: int, tovbe: int, city: str, elham: int, utc_offset: int, country: str):
+def create_user(userid: str, iman: int, tovbe: int, city: str | Option, elham: int, utc_offset: int, country: str | Option):
     """
     Creates a user in the data.json
     Parameters
@@ -186,7 +194,7 @@ def create_user(userid: str, iman: int, tovbe: int, city: str, elham: int, utc_o
         country : str
             A user's country
     """
-    with open('../data/data.json', 'r+') as f:
+    with open(os.getcwd() + '/cogs/data/data.json', 'r+') as f:
         data = json.load(f)
 
     if userid not in data:  # see if user doesn't have a saved location
@@ -194,7 +202,7 @@ def create_user(userid: str, iman: int, tovbe: int, city: str, elham: int, utc_o
         new_user = {"imam": iman, "tovbe": tovbe, "city": city, "elham": elham, "utc_offset": utc_offset,
                     "country": country}
         data[userid] = new_user
-        with open('../data/data.json', 'w') as json_file:  # write to data.json
+        with open(os.getcwd() + '/cogs/data/data.json', 'w') as json_file:  # write to data.json
             json.dump(data, json_file, indent=4)
 
 
@@ -207,10 +215,11 @@ class PrayerTimes(commands.Cog):
         :param bot client
         """
         self.client = bot
-        self._last_member = None
-        
+        self.config = config
+
     @slash_command(name='location', description="Set your location for prayer commands.")
-    async def location(self, ctx, city: discord.Option(str, "Pick a city"), country: discord.Option(str, "Pick a country", choices=countries)):
+    async def location(self, ctx, city: discord.Option(str, "Pick a city"),
+                       country: discord.Option(str, "Pick a country", autocomplete=get_countries)):
         """
         Changes user's location to their parameter specified location
 
@@ -224,37 +233,32 @@ class PrayerTimes(commands.Cog):
                 A discord option to specify a country str
         """
         # open data.json file to read later
-        with open('../data/data.json', 'r+') as f:
+        with open(os.getcwd() + '/cogs/data/data.json', 'r+') as f:
             data = json.load(f)
-
-        if country not in countries:
-            await ctx.respond("Please enter a valid country.")
-            return
 
         # Format the city properly for the API
         formatted_city = format_city(city)
+
         # Get the local time offset for the specified city
-        utc_offset = calc_local_time_offset(formatted_city, country)
+        utc_offset = calc_local_time_offset(formatted_city, country, self.config)
         if utc_offset is None:
             await ctx.respond("Your location is invalid. Please use \"\\location <City Name> <Country Name>\"")
             return
 
         try:
             if str(ctx.author.id) not in data:  # see if user doesn't have a saved location
-                create_user(str(ctx.author.id), 1, 0, city, 0, utc_offset, country)
+                create_user(str(ctx.author.id), 1, 0, city, 0, int(utc_offset), country)
             else:
                 data[str(ctx.author.id)]['city'] = city
                 data[str(ctx.author.id)]['utc_offset'] = utc_offset
                 data[str(ctx.author.id)]['country'] = country
 
-                with open('../data/data.json', 'w') as json_file:
+                with open(os.getcwd() + '/cogs/data/data.json', 'w') as json_file:
                     json.dump(data, json_file, indent=4)
         except Exception as e:
-            logging.error(e)
-            print(e)
+            logging.error("Error in /location" + str(e))
         await ctx.respond(
             "User location changed to: \nCity: " + city + "\nCountry: " + country)
-
 
     @slash_command(name="prayer", description="Display a user-specified prayer time", )
     async def prayer(self, ctx, sub_command: Option(str, "Enter a Prayer option",

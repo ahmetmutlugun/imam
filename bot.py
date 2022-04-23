@@ -3,11 +3,17 @@ import logging
 from random import SystemRandom
 import discord
 from discord.ext import commands
-from cogs import Meme, Recite, Dua, PrayerTimes, Quran_Pages, Trivia
+
+from cogs.dua import Dua
+from cogs.prayer import PrayerTimes
+from cogs.trivia import Trivia
+from cogs.quran_audio import Recite
+from cogs.quran_pages import Quran_Pages
+from cogs.meme import Meme
 
 # Load logger, configs, and random object
 logging.basicConfig(level=logging.INFO)
-f = open('data/config.json', 'r+')
+f = open('cogs/data/config.json', 'r+')
 config = json.load(f)
 f.close()
 
@@ -24,11 +30,11 @@ srandom = SystemRandom()
 @client.event
 async def on_ready():
     await client.change_presence(activity=discord.Game(prefix + "help"))
-    print("Bot Ready")
+    logging.info("Bot Ready")
     for guild in client.guilds:
         guilds.append(guild)
         guild_ids.append(guild.id)
-    print(guilds)
+    logging.info(guilds)
 
 
 @commands.Cog.listener()
@@ -39,18 +45,14 @@ async def on_member_join(member):
 
 
 @client.slash_command(name='welcome', description="Welcome a user")
-async def welcome(self, ctx, *, member: discord.Member = None):
-    member = member or ctx.author
-    if self._last_member is None or self._last_member.id != member.id:
-        await ctx.respond(f'As-salamu alaykum {member.mention}')
-    else:
-        await ctx.respond(f'As-salamu alaykum {member.mention}')
-    self._last_member = member
+async def welcome(ctx, member: discord.Member):
+    await ctx.respond(f'As-salamu alaykum {member.mention}')
 
 
 @client.slash_command(name='ping', description="Displays ping")
 async def _ping(ctx):  # Defines a new "context" (ctx) command called "ping."
     await ctx.respond(f"Pong! ({round(client.latency * 1000)}ms)")
+
 
 @client.slash_command(name='pp', description="Sends the profile picture of a user.")
 async def pp(ctx, member: discord.Member = None):
@@ -72,7 +74,7 @@ async def pp(ctx, member: discord.Member = None):
 @client.slash_command(name='changelog', description="Shows the latest changes.")
 async def changelog(ctx):
     embed = discord.Embed(title="Changelog", type='rich', color=0x048c28)
-    changelogs = open("data/changelog.txt", "r")
+    changelogs = open("cogs/data/changelog.txt", "r")
     embed.add_field(name="Latest Changes:", value=changelogs.read())
     embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                               "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
@@ -84,6 +86,6 @@ client.add_cog(Dua(client, config))
 client.add_cog(PrayerTimes(client, config))
 client.add_cog(Recite(client))
 client.add_cog(Quran_Pages(client))
-client.add_cog(Meme(client))
+client.add_cog(Meme(client, config))
 client.add_cog(Trivia(client))
 client.run(config['discord'])

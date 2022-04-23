@@ -26,7 +26,6 @@ class Meme(commands.Cog):
             bot client
         """
         self.client = client
-        self._last_member = None
         self.config = config
         self.reddit = asyncpraw.Reddit(client_id=self.config['reddit'],
                                        client_secret=self.config['redditsecret'],

@@ -6,9 +6,10 @@ import asyncio
 import json
 import sys
 import logging
+import time
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, pages
 
 from discord.commands import slash_command
 import itertools
@@ -113,7 +114,7 @@ class MusicPlayer:
 
 def quran_audio_api(surah, ayah):
 
-    f = open("../data/quran_audio.txt", "r+")
+    f = open("data/quran_audio.txt", "r+")
 
     data = json.load(f)
     f.close()
@@ -145,7 +146,7 @@ def create_quran_embed(surah: int, ayah: int) -> discord.Embed:
         An embed containing the quran surah and ayah
 
     """  
-    f = open('../data/en_hilali.json', 'r+')
+    f = open('data/en_hilali.json', 'r+')
     data = json.load(f)
     f.close()
 
@@ -381,7 +382,7 @@ class Recite(commands.Cog):
         except Exception:
             await ctx.respond("I am not currently connected to any channel.", delete_after=20)
 
-    @slash_command(name="quran")
+    # @slash_command(name="quran")
     async def quran(self, ctx, surah_and_ayah: str):
         logger.info("Handling /quran")
         """ Creates a series of quran embeds for a given surah starting at ayah 1
@@ -419,7 +420,7 @@ class Recite(commands.Cog):
                 logging.error("Index error in /quran %s", e)
                 break
         # Create the paginator and then return it
-        paginator = pages.Paginator(pages=page_list)
+        paginator = pages.Paginator(pages=page_list, timeout=3600, author_check=True, disable_on_timeout=True)
         await paginator.respond(ctx.interaction, ephemeral=False)
 
         logger.info(time.time() - start)
