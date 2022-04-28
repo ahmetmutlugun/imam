@@ -12,6 +12,19 @@ from discord.ext import commands
 
 errorText = "No prayer time found for your location. Please set a new location using imam location <city>"
 
+def load_countries() -> "dict[str][str]":
+    country_data = {}
+    with open(os.getcwd() + '/cogs/data/countryCodes.json') as f:
+        data = json.load(f)
+    
+    # Reverse order of countries and country codes
+    for k, v in data:
+        country_data[v] = k
+    
+    return country_data  
+
+# Create a countries cache
+countries = load_countries()    
 
 def set_user_data(user_id, data_name, data_value):
     try:
@@ -49,11 +62,10 @@ def get_location(author_id):
 
 
 def get_countries(ctx: discord.AutocompleteContext) -> list:
-    with open(os.getcwd() + '/cogs/data/countryCodes.json') as f:
-        data = json.load(f)
 
     matching_items = []
-    for item in list(data.values()):
+    # Iterate over the keys of the countries cache
+    for item in countries:
         item_list = ctx.value.lower().split(" ")
         failed = False
         for _ in item_list:
@@ -251,7 +263,7 @@ class PrayerTimes(commands.Cog):
             else:
                 data[str(ctx.author.id)]['city'] = city
                 data[str(ctx.author.id)]['utc_offset'] = utc_offset
-                data[str(ctx.author.id)]['country'] = country
+                data[str(ctx.author.id)]['country'] = countries[country]
 
                 with open(os.getcwd() + '/cogs/data/data.json', 'w') as json_file:
                     json.dump(data, json_file, indent=4)
