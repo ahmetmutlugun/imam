@@ -60,6 +60,7 @@ def get_location(author_id):
 
 
 def get_countries(ctx: discord.AutocompleteContext) -> list:
+
     matching_items = []
     # Iterate over the keys of the countries cache
     for item in countries:
@@ -183,8 +184,7 @@ def get_local_time_offset(author_id) -> int:
         return -25200
 
 
-def create_user(userid: str, iman: int, tovbe: int, city: str | Option, elham: int, utc_offset: int,
-                country: str | Option):
+def create_user(userid: str, iman: int, tovbe: int, city: str | Option, elham: int, utc_offset: int, country: str | Option):
     """
     Creates a user in the data.json
     Parameters
