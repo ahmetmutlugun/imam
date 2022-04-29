@@ -13,7 +13,7 @@ srandom = SystemRandom()
 class TriviaButton(discord.ui.Button):
     def __init__(self, ctx, label, is_answer, embed):
 
-        super().__init__(style=discord.ButtonStyle.blurple, label=label)
+        super().__init__(style=discord.ButtonStyle.green, label=label)
         self.is_answer = is_answer
         self.ctx = ctx
         self.embed = embed
@@ -21,15 +21,16 @@ class TriviaButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         # If the button is the correct answer, when clicked it should change to a success
         # style and edit the original message
-        self.disabled = True
+
         if self.is_answer:
             self.style = discord.ButtonStyle.success
-            await self.ctx.send("That is the right answer!", delete_after=10)#.edit_original_message(content="That was the right answer!")
+            self.view.stop()
+            await interaction.message.edit(" ✅ That was the right answer!", embed=None, view=None)
         # Otherwise, the button should change to a danger style and send a follow up message)
         else:
             self.style = discord.ButtonStyle.danger
-            #await interaction.followup.send("That was not the right answer")
-            await self.ctx.send("That is the wrong answer!", delete_after=10)
+            self.disabled = True
+            await interaction.response.edit_message(content="❌ That was not the right answer!", view=self.view)
 
 
 class TriviaView(View):
@@ -59,8 +60,8 @@ class TriviaView(View):
         """ View should clear items and send a time's up message on timeout
         """
         self.clear_items()
+        self.stop()
         await self.ctx.send(f"Time's up! The answer was: {self.correct_answer}")
-
 
 
 class Trivia(commands.Cog):
