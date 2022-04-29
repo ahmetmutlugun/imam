@@ -4,6 +4,7 @@
 # """
 import asyncio
 import json
+import os
 import sys
 import logging
 import time
@@ -114,7 +115,7 @@ class MusicPlayer:
 
 def quran_audio_api(surah, ayah):
 
-    f = open("data/quran_audio.txt", "r+")
+    f = open(os.getcwd() + "/cogs/data/quran_audio.txt", "r+")
 
     data = json.load(f)
     f.close()
@@ -146,7 +147,7 @@ def create_quran_embed(surah: int, ayah: int) -> discord.Embed:
         An embed containing the quran surah and ayah
 
     """  
-    f = open('data/en_hilali.json', 'r+')
+    f = open(os.getcwd() + '/cogs/data/en_hilali.json', 'r+')
     data = json.load(f)
     f.close()
 
@@ -382,7 +383,7 @@ class Recite(commands.Cog):
         except Exception:
             await ctx.respond("I am not currently connected to any channel.", delete_after=20)
 
-    # @slash_command(name="quran")
+    #@slash_command(name="quran")
     async def quran(self, ctx, surah_and_ayah: str):
         logger.info("Handling /quran")
         """ Creates a series of quran embeds for a given surah starting at ayah 1
@@ -391,9 +392,10 @@ class Recite(commands.Cog):
         ---------
         ctx : 
             A context
-        
+
         surah_and_ayah : str
             A string containing a surah and an ayah
+
         """
 
         # Retrieve the parameters
@@ -403,10 +405,10 @@ class Recite(commands.Cog):
 
         # Try creating an embed, throw an index error if the surah was invalid
         try:
-           create_quran_embed(surah, current_ayah)
+            create_quran_embed(surah, current_ayah)
         except IndexError:
             await ctx.respond("Could not find that surah/ayah combination. Please let us know is this is en error.")
-            logger.error("Could not find that surah/ayah combination.")
+            logger.error(f"Could not find that surah/ayah combination for {surah}, {current_ayah}.")
             return
 
         # Start a timer and initialize a list of pages
@@ -417,10 +419,43 @@ class Recite(commands.Cog):
             try:
                 page_list.append(create_quran_embed(surah, i))
             except IndexError as e:
-                logging.error("Index error in /quran %s", e)
+                # IndexError is expected
                 break
         # Create the paginator and then return it
-        paginator = pages.Paginator(pages=page_list, timeout=3600, author_check=True, disable_on_timeout=True)
+        paginator = pages.Paginator(pages=page_list)
+
+        class PersistentView(discord.ui.View):
+            def __init__(self, reciter):
+                super().__init__(timeout=None)
+                self.reciter = reciter
+
+            @discord.ui.button(
+                label="Recite",
+                style=discord.ButtonStyle.green,
+                custom_id="persistent_view:recite",
+            )
+            async def recite(self, button: discord.ui.Button, interaction: discord.Interaction,
+                             custom_id="persistent_view:recite"):
+                await interaction.response.send_message(f"Reciting {interaction.message.embeds[0].description}",
+                                                        ephemeral=True)
+                await ctx.send("Loading audio. This may take up to 10 seconds depending on the length.",
+                               delete_after=10)
+                await ctx.trigger_typing()
+                vc = ctx.voice_client
+                if not vc:
+                    await ctx.invoke(self.reciter.connect)
+                # Works up to here... needs testing on docker
+                logging.info(quran_audio_api(surah, current_ayah))
+                player = self.reciter.get_player(ctx)
+                source = await AudiusSource.create_source(ctx, quran_audio_api(surah, current_ayah),
+                                                          loop=self.reciter.bot.loop,
+                                                          data_input=f"{surah}:{current_ayah}")
+                await player.queue.put(source)
+                await ctx.send(
+                    f"Added the following to queue: Surah {surah}:{current_ayah}.")
+
+        view = PersistentView(reciter=self)
+        paginator = pages.Paginator(pages=page_list, custom_view=view)
         await paginator.respond(ctx.interaction, ephemeral=False)
 
         logger.info(time.time() - start)
