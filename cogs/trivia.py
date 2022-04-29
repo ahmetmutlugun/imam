@@ -1,3 +1,4 @@
+import os
 from random import SystemRandom
 import random
 import json
@@ -7,7 +8,6 @@ from discord.commands import slash_command
 from discord.ext import commands
 
 srandom = SystemRandom()
-
 
 
 class TriviaButton(discord.ui.Button):
@@ -24,11 +24,12 @@ class TriviaButton(discord.ui.Button):
         self.disabled = True
         if self.is_answer:
             self.style = discord.ButtonStyle.success
-            await interaction.edit_original_message("That was the right answer!")
+            await self.ctx.send("That is the right answer!", delete_after=10)#.edit_original_message(content="That was the right answer!")
         # Otherwise, the button should change to a danger style and send a follow up message)
         else:
             self.style = discord.ButtonStyle.danger
-            await interaction.followup.send("That was not the right answer")
+            #await interaction.followup.send("That was not the right answer")
+            await self.ctx.send("That is the wrong answer!", delete_after=10)
 
 
 class TriviaView(View):
@@ -51,14 +52,15 @@ class TriviaView(View):
         self.correct_answer = correct_answer
 
         # Add all child components
-        for k, v in answers:
-            self.add_item(TriviaButton(self.ctx, label=k, is_answer=v, embed=self.embed))
+        for i in answers:
+            self.add_item(TriviaButton(self.ctx, label=i, is_answer=answers[i], embed=create_trivia_embed()))
 
     async def on_timeout(self) -> None:
         """ View should clear items and send a time's up message on timeout
         """
         self.clear_items()
-        self.ctx.send(f"Time's up! The answer was: {self.correct_answer}")
+        await self.ctx.send(f"Time's up! The answer was: {self.correct_answer}")
+
 
 
 class Trivia(commands.Cog):
@@ -75,13 +77,12 @@ class Trivia(commands.Cog):
 
     @slash_command(name='trivia', description="Asks a random islamic trivia question.")
     async def trivia(self, ctx):
-
         # Create embed
         embed, buttons, correct_answer = create_trivia_embed()
         # Pass buttons to trivia view class
         view = TriviaView(ctx, correct_answer, buttons)
         # Send them both to user
-        ctx.send(content="Starting a game of trivia... You have 30 seconds!", embed=embed, view=view)
+        await ctx.respond(content="Starting a game of trivia... You have 30 seconds!", embed=embed, view=view)
 
 
 def create_trivia_embed() -> tuple:
@@ -113,11 +114,11 @@ def create_trivia_embed() -> tuple:
     for let, text in zip('abcd', options):
         embed.add_field(name=f"*Option {let}", value=text, inline=False)
         buttons[let] = (text == correct_answer)
-    
+
     return embed, buttons, data[data["correct_answer"]]
 
 
 def get_random_question():
-    with open('data/questions.json', 'r+') as f:
+    with open(os.getcwd() + '/cogs/data/questions.json', 'r+') as f:
         data = json.load(f)
     return data[str(srandom.choice(range(0, len(data))))]

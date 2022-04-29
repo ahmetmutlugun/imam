@@ -12,19 +12,20 @@ from discord.ext import commands
 
 errorText = "No prayer time found for your location. Please set a new location using imam location <city>"
 
+
 def load_countries() -> "dict[str][str]":
-    country_data = {}
     with open(os.getcwd() + '/cogs/data/countryCodes.json') as f:
         data = json.load(f)
-    
+
     # Reverse order of countries and country codes
-    for k, v in data:
-        country_data[v] = k
-    
-    return country_data  
+    country_data = {v: k for k, v in data.items()}
+
+    return country_data
+
 
 # Create a countries cache
-countries = load_countries()    
+countries = load_countries()
+
 
 def set_user_data(user_id, data_name, data_value):
     try:
@@ -62,7 +63,6 @@ def get_location(author_id):
 
 
 def get_countries(ctx: discord.AutocompleteContext) -> list:
-
     matching_items = []
     # Iterate over the keys of the countries cache
     for item in countries:
@@ -186,7 +186,8 @@ def get_local_time_offset(author_id) -> int:
         return -25200
 
 
-def create_user(userid: str, iman: int, tovbe: int, city: str | Option, elham: int, utc_offset: int, country: str | Option):
+def create_user(userid: str, iman: int, tovbe: int, city: str | Option, elham: int, utc_offset: int,
+                country: str | Option):
     """
     Creates a user in the data.json
     Parameters
@@ -252,7 +253,8 @@ class PrayerTimes(commands.Cog):
         formatted_city = format_city(city)
 
         # Get the local time offset for the specified city
-        utc_offset = calc_local_time_offset(formatted_city, country, self.config)
+        print(load_countries()[country])
+        utc_offset = calc_local_time_offset(formatted_city, load_countries()[country], self.config)
         if utc_offset is None:
             await ctx.respond("Your location is invalid. Please use \"\\location <City Name> <Country Name>\"")
             return
