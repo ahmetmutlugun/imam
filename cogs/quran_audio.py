@@ -20,7 +20,6 @@ from async_timeout import *
 logger = logging.getLogger('discord')
 logger.setLevel(logging.INFO)
 
-
 FFMPEG_OPTIONS = {
     'before_options': '-nostdin -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
     'options': '-vn -loglevel panic'
@@ -114,7 +113,6 @@ class MusicPlayer:
 
 
 def quran_audio_api(surah, ayah):
-
     f = open(os.getcwd() + "/cogs/data/quran_audio.txt", "r+")
 
     data = json.load(f)
@@ -146,7 +144,7 @@ def create_quran_embed(surah: int, ayah: int) -> discord.Embed:
     embed: discord.Embed
         An embed containing the quran surah and ayah
 
-    """  
+    """
     f = open(os.getcwd() + '/cogs/data/en_hilali.json', 'r+')
     data = json.load(f)
     f.close()
@@ -155,7 +153,7 @@ def create_quran_embed(surah: int, ayah: int) -> discord.Embed:
         surah_name = data["data"]["surahs"][surah - 1]["englishName"]
         text = data["data"]["surahs"][surah - 1]["ayahs"][ayah - 1]["text"]
     except IndexError as e:
-        raise e 
+        raise e
 
     embed = discord.Embed(title=f"Surah {surah_name}", type='rich', color=0x048c28)
     embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
@@ -383,7 +381,7 @@ class Recite(commands.Cog):
         except Exception:
             await ctx.respond("I am not currently connected to any channel.", delete_after=20)
 
-    #@slash_command(name="quran")
+    # @slash_command(name="quran")
     async def quran(self, ctx, surah_and_ayah: str):
         logger.info("Handling /quran")
         """ Creates a series of quran embeds for a given surah starting at ayah 1

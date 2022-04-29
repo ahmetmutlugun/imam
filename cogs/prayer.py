@@ -74,7 +74,7 @@ def get_countries(ctx: discord.AutocompleteContext) -> list:
     return matching_items
 
 
-def format_city(city: str | Option) -> str:
+def format_city(city) -> str:
     """ Takes a string of form 'foo bar func' and outputs a string of
     form 'FooBarFunc'
 
@@ -120,7 +120,7 @@ def get_prayer_times(city: str, country: str):
     return ptl
 
 
-def calc_local_time_offset(city: str, country: str | Option, config: dict):
+def calc_local_time_offset(city: str, country, config: dict):
     """
     Gets the local utc offset from positionstack's API
     Parameters
@@ -184,7 +184,7 @@ def get_local_time_offset(author_id) -> int:
         return -25200
 
 
-def create_user(userid: str, iman: int, tovbe: int, city: str | Option, elham: int, utc_offset: int, country: str | Option):
+def create_user(userid: str, iman: int, tovbe: int, city, elham: int, utc_offset: int, country):
     """
     Creates a user in the data.json
     Parameters

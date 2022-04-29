@@ -2,6 +2,7 @@ import logging
 import os
 import time
 import json
+import redis
 
 import discord
 from discord.ext import commands, pages
@@ -11,8 +12,21 @@ from discord.commands import slash_command
 logger = logging.getLogger('discord')
 logger.setLevel(logging.INFO)
 
+redis_client = redis.Redis(host='localhost', port=6379)
 
-def create_quran_embed(surah: int, ayah: int) -> Embed:
+
+def set_quran_redis():
+    with open(os.getcwd() + '/cogs/data/en_hilali.json', 'r') as f:
+        data = json.load(f)['data']['surahs']
+    for surah in data:
+        for ayah in surah['ayahs']:
+            redis_client.set(str(surah['number']) + "_" + str(ayah['numberInSurah']), ayah['text'])
+
+
+set_quran_redis()
+
+
+def create_quran_embed(surah: int, ayah: int):
     """ Creates an embed for a quran surah and ayah
 
     Parameters
@@ -40,9 +54,10 @@ def create_quran_embed(surah: int, ayah: int) -> Embed:
 
     try:
         surah_name = data["data"]["surahs"][surah - 1]["englishName"]
-        text = data["data"]["surahs"][surah - 1]["ayahs"][ayah - 1]["text"]
-    except IndexError as e:
-        raise e
+        #text = data["data"]["surahs"][surah - 1]["ayahs"][ayah - 1]["text"]
+        text = redis_client.get(str(surah) + "_" + str(ayah)).decode('utf-8')
+    except AttributeError:
+        return None
 
     embed = Embed(title=f"Surah {surah_name}", type='rich', color=0x048c28)
     embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
@@ -102,19 +117,7 @@ def find_surah_id(surah: str) -> int:
     with open(os.getcwd() + '/cogs/data/surahs.json', "r") as f:
         data = json.load(f)
 
-    # Find the surah id
-    logging.error(list(data.keys())[list(data.values()).index(surah)])
     return int(list(data.keys())[list(data.values()).index(surah)])
-    # print(data)
-    # counter = 0
-    # for i in data:
-    #     counter += 1
-    #     if i == surah:
-    #         print(counter)
-    #         return counter
-    #
-    # # Return -1 if it couldn't be found (shouldn't happen)
-    # return -1
 
 
 class Quran_Pages(commands.Cog):
@@ -169,26 +172,19 @@ class Quran_Pages(commands.Cog):
         if surah_id == -1:
             await ctx.respond("Could not find that surah/ayah combination. Please let us know is this is en error.")
             return
-        # Check if the ayah was valid for that surah 
-        try:
-            create_quran_embed(surah_id, start_ayah)
-        except IndexError:
+        # Check if the ayah was valid for that surah
+        if create_quran_embed(surah_id, start_ayah) is None:
             await ctx.respond("Could not find that surah/ayah combination. Please let us know is this is en error.")
             return
 
-        # Start a timer and initialize a list of pages
-        start = time.time()
+        # Initialize a list of pages
         page_list = []
         # For each ayah create a new embed and append it to the list of pages
         for i in range(start_ayah, end_ayah + 1):
-            try:
+            if create_quran_embed(surah_id, i) is not None:
                 page_list.append(create_quran_embed(surah_id, i))
-            except IndexError as e:
-                logging.error("Index error in /quran %s %s", e, i)
+            else:
                 break
         # Create the paginator and then return it
-        print(page_list)
         paginator = pages.Paginator(pages=page_list, timeout=3600, author_check=True, disable_on_timeout=True)
         await paginator.respond(ctx.interaction, ephemeral=False)
-
-        logger.info(time.time() - start)
