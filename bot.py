@@ -5,13 +5,13 @@ import discord
 from discord.ext import commands
 
 from cogs.dua import Dua
-from cogs.prayer import PrayerTimes
+from cogs.prayer import PrayerTimes, auto_delete_users
 from cogs.trivia import Trivia
 from cogs.quran_audio import Recite
 from cogs.quran_pages import Quran_Pages
 from cogs.meme import Meme
 
-# Load logger, configs, and random object
+# Load logger, configs, and  random object
 logging.basicConfig(level=logging.INFO)
 f = open('cogs/data/config.json', 'r+')
 config = json.load(f)
@@ -29,6 +29,7 @@ srandom = SystemRandom()
 # Case insensitivity can cause performance issues
 @client.event
 async def on_ready():
+    auto_delete_users()
     await client.change_presence(activity=discord.Game(prefix + "help"))
     logging.info("Bot Ready")
     for guild in client.guilds:

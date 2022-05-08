@@ -3,3 +3,4 @@ PyNaCl
 redis
 requests
 asyncio
+cryptography

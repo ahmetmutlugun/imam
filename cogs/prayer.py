@@ -1,16 +1,26 @@
 import datetime
+import hashlib
 import http.client
 import json
 import logging
 import os
+import time
 import urllib.parse
-
 import discord
+from cryptography.fernet import Fernet
 import requests
 from discord.commands import slash_command, Option
 from discord.ext import commands
 
-errorText = "No prayer time found for your location. Please set a new location using imam location <city>"
+
+def auto_delete_users():
+    data = read_data_json()
+    for user in list(data):
+        if time.time() - data[user]['date_created'] > 2592000:
+            data.pop(user)
+
+    with open(os.getcwd() + '/cogs/data/data.json', 'w') as data_file:
+        json.dump(data, data_file)
 
 
 def load_countries() -> "dict[str][str]":
@@ -24,33 +34,32 @@ def load_countries() -> "dict[str][str]":
 countries = load_countries()
 
 
-def set_user_data(user_id, data_name, data_value):
-    try:
-        f = open(os.getcwd() + '/cogs/data/data.json', 'r+')
-        data = json.load(f)
-        f.close()
-        if user_id in data:
-            data[str(user_id)][data_name] = data_value
-        with open(os.getcwd() + '/cogs/data/data.json', 'w') as json_file:
-            json.dump(data, json_file, indent=4)
-            json_file.truncate()
-    except Exception as e:
-        logging.warning(e)
+def decrypt(value, key):
+    cipher = Fernet(key)
+    return str(cipher.decrypt(bytes(str(value), encoding='utf8')).decode("utf-8") )
 
 
-def get_location(author_id):
+def read_data_json():
+    f = open(os.getcwd() + '/cogs/data/data.json', 'r+')
+    data = json.load(f)
+    f.close()
+    return data
+
+
+def get_location(author_id, key):
     """
     Get location
     Returns location of a user
     :param author_id: user id
     :return: city - user's city as string
     """
-    with open(os.getcwd() + '/cogs/data/data.json', 'r+') as f:
-        data = json.load(f)
+    data = read_data_json()
+
     try:
-        if str(author_id) in data:
-            city = data[str(author_id)]['city']
-            country = data[str(author_id)]['country']
+        author_hash = hashlib.sha256(str(author_id).encode("utf-8")).hexdigest()
+        if author_hash in data:
+            city = decrypt(data[author_hash]['city'], key)
+            country = decrypt(data[author_hash]['country'], key)
             return [city, country]
         else:
             return ['Cupertino', 'United States of America']
@@ -60,7 +69,6 @@ def get_location(author_id):
 
 
 def get_countries(ctx: discord.AutocompleteContext) -> list:
-
     matching_items = []
     # Iterate over the keys of the countries cache
     for item in countries:
@@ -159,9 +167,9 @@ def calc_local_time_offset(city: str, country, config: dict):
         return None
 
 
-def get_local_time_offset(author_id) -> int:
+def get_local_time_offset(author_id, key) -> int:
     """
-    Returns local time offset of a user from data.json
+    Returns local time offset of a user from data
     Parameters
     ---------
     author_id :
@@ -172,23 +180,25 @@ def get_local_time_offset(author_id) -> int:
     utc_offset : int
         UTC offset for the user
     """
-    with open(os.getcwd() + '/cogs/data/data.json', 'r+') as f:
-        data = json.load(f)
+    data = read_data_json()
+    author_hash = hashlib.sha256(str(author_id).encode("utf-8")).hexdigest()
     try:
-        if str(author_id) in data:
-            offset = data[str(author_id)]['utc_offset']
-            return offset
+        if author_hash in data:
+            offset = decrypt(data[author_hash]['utc_offset'], key)
+            return int(offset)
 
     except Exception:
         # Return the utc offset of Cupertino by default
         return -25200
 
 
-def create_user(userid: str, iman: int, tovbe: int, city, elham: int, utc_offset: int, country):
+def create_user(key: bytes, userid: str, city, utc_offset: int, country):
     """
-    Creates a user in the data.json
+    Creates a user in the data
     Parameters
-    ---------- 
+    ----------
+        key: bytes
+            Encrypt/Decrypt key
         userid : str
            A user's discord id
         iman : int
@@ -204,16 +214,33 @@ def create_user(userid: str, iman: int, tovbe: int, city, elham: int, utc_offset
         country : str
             A user's country
     """
-    with open(os.getcwd() + '/cogs/data/data.json', 'r+') as f:
-        data = json.load(f)
+    data = read_data_json()
+    cipher = Fernet(bytes(key, encoding='utf8'))
 
     if userid not in data:  # see if user doesn't have a saved location
         # Save user location, utc_offset, and defaults
-        new_user = {"imam": iman, "tovbe": tovbe, "city": city, "elham": elham, "utc_offset": utc_offset,
-                    "country": country}
-        data[userid] = new_user
-        with open(os.getcwd() + '/cogs/data/data.json', 'w') as json_file:  # write to data.json
+        new_user = {"city": cipher.encrypt(bytes(city, encoding='utf8')).decode('utf-8'),
+                    "utc_offset": cipher.encrypt(bytes(str(utc_offset), encoding='utf8')).decode('utf-8'),
+                    "country": cipher.encrypt(bytes(country, encoding='utf8')).decode('utf-8'),
+                    "date_created": time.time()}
+        data[hashlib.sha256(str(userid).encode("utf-8")).hexdigest()] = new_user
+
+        with open(os.getcwd() + '/cogs/data/data.json', 'w') as json_file:  # write to data
             json.dump(data, json_file, indent=4)
+
+
+def update_user(key, userid: str, city, utc_offset: int, country):
+    data = read_data_json()
+    cipher = Fernet(bytes(key, encoding='utf8'))
+    userid = hashlib.sha256(str(userid).encode("utf-8")).hexdigest()
+
+    data[userid]['city'] = cipher.encrypt(bytes(city, encoding='utf8')).decode('utf-8')
+    data[userid]['utc_offset'] = cipher.encrypt(bytes(str(utc_offset), encoding='utf8')).decode('utf-8')
+    data[userid]['country'] = cipher.encrypt(bytes(country, encoding='utf8')).decode('utf-8')
+    data[userid]['date_created'] = time.time()
+
+    with open(os.getcwd() + '/cogs/data/data.json', 'w') as json_file:
+        json.dump(data, json_file, indent=4)
 
 
 class PrayerTimes(commands.Cog):
@@ -242,31 +269,26 @@ class PrayerTimes(commands.Cog):
             country : discord.Option
                 A discord option to specify a country str
         """
-        # open data.json file to read later
-        with open(os.getcwd() + '/cogs/data/data.json', 'r+') as f:
-            data = json.load(f)
+        # open data file to read later
+        data = read_data_json()
 
         # Format the city properly for the API
         formatted_city = format_city(city)
 
         # Get the local time offset for the specified city
-        utc_offset = calc_local_time_offset(formatted_city, load_countries()[country], self.config)
+        utc_offset = calc_local_time_offset(formatted_city, countries[country], self.config)
         if utc_offset is None:
             await ctx.respond("Your location is invalid. Please use \"\\location <City Name> <Country Name>\"")
             return
 
-        try:
-            if str(ctx.author.id) not in data:  # see if user doesn't have a saved location
-                create_user(str(ctx.author.id), 1, 0, city, 0, int(utc_offset), country)
-            else:
-                data[str(ctx.author.id)]['city'] = city
-                data[str(ctx.author.id)]['utc_offset'] = utc_offset
-                data[str(ctx.author.id)]['country'] = countries[country]
-
-                with open(os.getcwd() + '/cogs/data/data.json', 'w') as json_file:
-                    json.dump(data, json_file, indent=4)
-        except Exception as e:
-            logging.error("Error in /location" + str(e))
+        # try:
+        author_hash = hashlib.sha256(str(ctx.author.id).encode("utf-8")).hexdigest()
+        if author_hash not in data:  # see if user doesn't have a saved location
+            create_user(self.config['encrypt_key'], ctx.author.id, city, int(utc_offset), country)
+        else:
+            update_user(self.config['encrypt_key'], ctx.author.id, city, int(utc_offset), country)
+        # except Exception as e:
+        #     logging.error("Error in /location" + str(e))
         await ctx.respond(
             "User location changed to: \nCity: " + city + "\nCountry: " + country)
 
@@ -284,13 +306,14 @@ class PrayerTimes(commands.Cog):
                 Sub_command specifying which prayer time to return
         """
         # Get location of the user and prayer times for that location
-        location = get_location(ctx.author.id)  # get user location
+        location = get_location(ctx.author.id, self.config['encrypt_key'])  # get user location
         city = location[0].replace("_", " ")
         country = location[1].replace("_", " ")
         time = get_prayer_times(city, country)
         # Return error message if time couldn't be found
         if time is None:
-            await ctx.respond(errorText)
+            await ctx.respond(
+                "No prayer time found for your location. Please set a new location using imam location <city>")
         if sub_command == "fajr":
             await ctx.respond("Fajr/Sahur is at " + str(time['Fajr']) + " for " + city)
         elif sub_command == "dhuhr":
@@ -324,14 +347,15 @@ class PrayerTimes(commands.Cog):
             Context from which prayer_now was invoked
         """
         # Set up lists and dictionaries
-        location = get_location(ctx.author.id)  # get user location
+        location = get_location(ctx.author.id, self.config['encrypt_key'])  # get user location
         city = location[0].replace("_", " ")
         country = location[1].replace("_", " ")
         # Obtains dictionary from get_prayer_times() and reformats it
         prayer_times = get_prayer_times(city, country)
 
         # Get the local time in seconds
-        local_time = datetime.timedelta(seconds=get_local_time_offset(ctx.author.id)) + datetime.datetime.utcnow()
+        local_time = datetime.timedelta(
+            seconds=get_local_time_offset(ctx.author.id, self.config['encrypt_key'])) + datetime.datetime.utcnow()
 
         # Get rid of the date variables because it is messing with the comparison operation in the forloop
         formatted_time = datetime.datetime.strptime(local_time.strftime('%H:%M'), "%H:%M")
