@@ -26,7 +26,8 @@ def auto_delete_users():
 def load_countries() -> "dict[str][str]":
     with open(os.getcwd() + '/cogs/data/countryCodes.json') as f:
         data = json.load(f)
-
+    for k, v in data.items():
+        data[k] = data[k] + f" ({k})"
     return {v: k for k, v in data.items()}
 
 
@@ -257,6 +258,9 @@ class PrayerTimes(commands.Cog):
     @slash_command(name='location', description="Set your location for prayer commands.")
     async def location(self, ctx, city: discord.Option(str, "Pick a city"),
                        country: discord.Option(str, "Pick a country", autocomplete=get_countries)):
+        if country not in countries:
+            await ctx.send("Please pick a country from the autocomplete list!")
+            return
         """
         Changes user's location to their parameter specified location
 
