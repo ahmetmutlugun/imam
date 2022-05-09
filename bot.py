@@ -2,6 +2,7 @@ import json
 import logging
 from random import SystemRandom
 import discord
+from discord import Status
 from discord.ext import commands
 
 from cogs.dua import Dua
@@ -12,17 +13,16 @@ from cogs.quran_pages import Quran_Pages
 from cogs.meme import Meme
 
 # Load logger, configs, and  random object
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 f = open('cogs/data/config.json', 'r+')
 config = json.load(f)
 f.close()
 
 prefix = "imam "
 
-client = commands.AutoShardedBot(description="A Discord bot with a set of Islamic tools.")
+client = commands.AutoShardedBot(description="A Discord bot with a set of Islamic tools.", status=Status.online, activity=discord.Game("/help"))
 
 guilds = []
-guild_ids = []
 srandom = SystemRandom()
 
 
@@ -30,11 +30,8 @@ srandom = SystemRandom()
 @client.event
 async def on_ready():
     auto_delete_users()
-    await client.change_presence(activity=discord.Game(prefix + "help"))
     logging.info("Bot Ready")
-    for guild in client.guilds:
-        guilds.append(guild)
-        guild_ids.append(guild.id)
+    guilds = await client.fetch_guilds().flatten()
     logging.info(guilds)
 
 
@@ -95,6 +92,7 @@ async def help(ctx):
     embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                               "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
     await ctx.respond(embed=embed)
+
 
 client.add_cog(Dua(client, config))
 client.add_cog(PrayerTimes(client, config))
