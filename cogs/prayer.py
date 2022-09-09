@@ -368,9 +368,12 @@ class PrayerTimes(commands.Cog):
 
         pnow = ""
         pnext = "N/A"
-        # Iterate over all prayer times and find prayertime now
+        # Iterate over all prayer times and find the next prayer time
         for prayer in prayer_times:
             p_time = datetime.datetime.strptime(prayer_times[prayer], "%H:%M")
+            # Check if Midnight takes place the next day (i.e. after 00:00) and if so add a day to the prayer datetime
+            if prayer == "Midnight" and p_time < datetime.datetime.strptime("12:00", "%H:%M"):
+                p_time = p_time + datetime.timedelta(days=1)
             # If local time precedes p_time then 'prayer' is the next prayer
             if formatted_time < p_time:
                 pnext = prayer
