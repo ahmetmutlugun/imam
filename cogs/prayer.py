@@ -167,7 +167,6 @@ def calc_local_time_offset(city: str, country, config: dict):
         logging.error(e)
         return None
 
-
 def get_local_time_offset(author_id, key) -> int:
     """
     Returns local time offset of a user from data
@@ -183,6 +182,7 @@ def get_local_time_offset(author_id, key) -> int:
     """
     data = read_data_json()
     author_hash = hashlib.sha256(str(author_id).encode("utf-8")).hexdigest()
+
     try:
         if author_hash in data:
             offset = decrypt(data[author_hash]['utc_offset'], key)
@@ -352,6 +352,7 @@ class PrayerTimes(commands.Cog):
         ctx :
             Context from which prayer_now was invoked
         """
+
         # Set up lists and dictionaries
         location = get_location(ctx.author.id, self.config['encrypt_key'])  # get user location
         city = location[0].replace("_", " ")
@@ -360,8 +361,7 @@ class PrayerTimes(commands.Cog):
         prayer_times = get_prayer_times(city, country)
 
         # Get the local time in seconds
-        local_time = datetime.timedelta(
-            seconds=get_local_time_offset(ctx.author.id, self.config['encrypt_key'])) + datetime.datetime.utcnow()
+        local_time = datetime.timedelta(seconds=get_local_time_offset(ctx.author.id, self.config['encrypt_key'])) + datetime.datetime.utcnow()
 
         # Get rid of the date variables because it is messing with the comparison operation in the forloop
         formatted_time = datetime.datetime.strptime(local_time.strftime('%H:%M'), "%H:%M")

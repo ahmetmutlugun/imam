@@ -12,7 +12,7 @@ import discord
 from discord.commands import slash_command, Option
 from discord.ext import commands, pages
 
-srandom = SystemRandom()
+system_random = SystemRandom()
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.INFO)
@@ -183,7 +183,7 @@ class Dua(commands.Cog):
                 f'O Allah, Forgive {user.mention} of his sins '
                 f'O Allah, Ease {user.mention} \'s mind '
                 ]
-        await ctx.respond(srandom.choice(duas))
+        await ctx.respond(system_random.choice(duas))
 
     @slash_command(name='salawat', description="Salawat upon the Prophet")
     async def salawat(self, ctx):
@@ -240,7 +240,7 @@ class Dua(commands.Cog):
                  ]
 
         if number is None:
-            response = srandom.choice(names)
+            response = system_random.choice(names)
         else:
             response = names[number - 1]
 

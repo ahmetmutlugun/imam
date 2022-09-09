@@ -12,7 +12,7 @@ from discord.ext import commands
 logging.basicConfig(level=logging.INFO)
 
 # Create random object
-srandom = SystemRandom()
+system_random = SystemRandom()
 
 
 class Meme(commands.Cog):
@@ -29,18 +29,18 @@ class Meme(commands.Cog):
         self.config = config
         self.reddit = asyncpraw.Reddit(client_id=self.config['reddit'],
                                        client_secret=self.config['redditsecret'],
-                                       user_agent="u/sharpaxeyt")
+                                       user_agent=self.config['username'])
 
     @slash_command(name='meme', description="Sends a meme from r/izlam")
     async def meme(self, ctx):
         async with ctx.channel.typing():
 
             subs = ['izlam', 'MemriTVmemes']
-            discord_subreddit = srandom.choice(subs)
+            discord_subreddit = system_random.choice(subs)
             try:
                 subreddit = await self.reddit.subreddit(discord_subreddit)
                 posts = [post async for post in subreddit.hot(limit=20)]
-                random_post_number = srandom.choice(range(0, 20))
+                random_post_number = system_random.choice(range(0, 20))
                 submission = posts[random_post_number]
                 if not submission.stickied:
                     discordreceive = {'title': submission.title,
