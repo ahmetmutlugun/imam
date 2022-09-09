@@ -187,6 +187,8 @@ def get_local_time_offset(author_id, key) -> int:
         if author_hash in data:
             offset = decrypt(data[author_hash]['utc_offset'], key)
             return int(offset)
+        else:
+            return -25200
 
     except Exception:
         # Return the utc offset of Cupertino by default
