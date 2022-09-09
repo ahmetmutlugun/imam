@@ -45,7 +45,7 @@ async def on_member_join(member):
 
 
 @client.slash_command(name='welcome', description="Welcome a user")
-async def welcome(ctx, member: discord.Member):
+async def welcome(ctx, member: discord.Member):x
     await ctx.respond(f'As-salamu alaykum {member.mention}')
 
 

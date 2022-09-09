@@ -94,7 +94,7 @@ class MusicPlayer:
             self.current = source
 
             self._guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
-            self.np = await self._channel.respond(f'**Now Reciting:** {source.title} requested by '
+            self.np = await self._channel.send(f'**Now Reciting:** {source.title} requested by '
                                                   f'{source.requester}')
             await self.next.wait()
 
@@ -249,9 +249,14 @@ class Recite(commands.Cog):
             return
 
         await ctx.trigger_typing()
+
         vc = ctx.voice_client
-        if not vc:
-            await ctx.invoke(self.connect_)
+
+        try:
+            await ctx.author.voice.channel.connect()
+        except asyncio.TimeoutError:
+            pass
+
         if surah_and_ayah is not None:
             counter = 0
             for i in range(int(first_ayah), int(last_ayah) + 1):
