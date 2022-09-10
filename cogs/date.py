@@ -1,4 +1,3 @@
-import discord
 import requests
 import datetime
 from discord.commands import slash_command
@@ -29,17 +28,16 @@ class Date(commands.Cog):
 
       resp = f"Today is the {hijri_day}"
       if hijri_day == 1:
-        resp+="st"
+        resp+="st "
       elif hijri_day == 2:
-        resp+="nd"
+        resp+="nd "
       elif hijri_day == 3:
-        resp+="rd"
+        resp+="rd "
       else:
-        resp+="th"
-      resp+=f"day of the month of {hijri_month}, {hijri_year} years AH."
+        resp+="th "
+      resp+=f"day of the month of {hijri_month}, {hijri_year} AH."
 
       if holidays:
         resp+=f"It is also {holidays[0]}!"
       
       await ctx.respond(resp)
-
