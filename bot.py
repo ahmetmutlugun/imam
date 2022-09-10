@@ -6,6 +6,7 @@ from discord import Status
 from discord.ext import commands
 
 from cogs.dua import Dua
+from cogs.date import Date
 from cogs.prayer import PrayerTimes, auto_delete_users
 from cogs.trivia import Trivia
 from cogs.quran_audio import Recite
@@ -101,6 +102,7 @@ def set_author_imam(embed: discord.Embed):
 
 
 client.add_cog(Dua(client, config))
+client.add_cog(Date(client, config))
 client.add_cog(PrayerTimes(client, config))
 client.add_cog(Recite(client))
 client.add_cog(Quran_Pages(client))
