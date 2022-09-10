@@ -404,8 +404,8 @@ class PrayerTimes(commands.Cog):
         hours = diff.seconds // 3600
         mins = (diff.seconds // 60) % 60
 
-        # Because the time loops after 23:59, this needs to be done
-        if pnow == "Isha":
+        # Because the time loops after 23:59, we need to do this if Midnight is after 12:00 AM
+        if pnow == "Isha" and datetime.datetime.strptime(prayer_times["Midnight"], "%H:%M") < datetime.datetime.strptime("12:00", "%H:%M"):
             hours = 23 - hours
             mins = 59 - mins
 
