@@ -13,8 +13,6 @@ from cogs.quran_audio import Recite
 from cogs.quran_pages import Quran_Pages
 from cogs.meme import Meme
 
-# TODO: Test set_author_imam and use it in other embeds
-
 # Load logger, configs, and  random object
 logging.basicConfig(level=logging.DEBUG)
 f = open('cogs/data/config.json', 'r+')
@@ -45,17 +43,12 @@ async def on_member_join(member):
         await channel.respond('As-salamu alaykum {0.mention}.'.format(member))
 
 
-@client.slash_command(name='welcome', description="Welcome a user")
-async def welcome(ctx, member: discord.Member):x
-    await ctx.respond(f'As-salamu alaykum {member.mention}')
-
-
 @client.slash_command(name='ping', description="Displays ping")
-async def _ping(ctx):  # Defines a new "context" (ctx) command called "ping."
+async def ping(ctx):
     await ctx.respond(f"Pong! ({round(client.latency * 1000)}ms)")
 
 
-@client.slash_command(name='pp', description="Sends the profile picture of a user.")
+@client.slash_command(name='profile', description="Sends the profile of a user.")
 async def pp(ctx, member: discord.Member = None):
     embed = None
 
@@ -73,25 +66,28 @@ async def pp(ctx, member: discord.Member = None):
     await ctx.respond(embed=embed)
 
 
-@client.slash_command(name='changelog', description="Shows the latest changes.")
-async def changelog(ctx):
-    embed = discord.Embed(title="Changelog", type='rich', color=0x048c28)
-    changelogs = open("cogs/data/changelog.txt", "r")
-    embed.add_field(name="Latest Changes:", value=changelogs.read())
-    set_author_imam(embed)
-    await ctx.respond(embed=embed)
-    changelogs.close()
-
-
 @client.slash_command(name='help', description="Shows the latest changes.")
 async def help(ctx):
     embed = discord.Embed(title="List of /commands", type='rich', color=0x048c28)
-    embed.add_field(name="Main:", value="ping, changelog, pp, welcome, help")
+    embed.add_field(name="General:", value="ping, profile, help, about")
     embed.add_field(name="Dua:", value="hadith, basmalah, pray, salawat, esma, takbeer, dhikr, salaam")
     embed.add_field(name="Meme:", value="meme")
     embed.add_field(name="Prayer:", value="location, prayer, prayer_now")
     embed.add_field(name="Quran:", value="quran")
     embed.add_field(name="Trivia:", value="trivia")
+    embed.add_field(name="Date", value="hijri")
+    set_author_imam(embed)
+    await ctx.respond(embed=embed)
+
+
+@client.slash_command(name = "about", description = "About the bot and the developers")
+async def about(ctx):
+    embed = discord.Embed(title="About Us", type='rich', color=0x048c28)
+    embed.add_field(name="Thanks for using Imam!",
+                    value="ImamBot was created as a project by two students. You can find more about the project "
+                          "at https://github.com/ahmetmutlugun/imam. If you want to support the project, "
+                          "your feedback is more valuable than anything else. You can contact us at imam@sharpie.one "
+                          "or leave an issue on GitHub.")
     set_author_imam(embed)
     await ctx.respond(embed=embed)
 

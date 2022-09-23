@@ -84,11 +84,6 @@ class Dua(commands.Cog):
         self.client = client
         self.config = config
 
-    # TODO:
-    #  - Add fasting days count
-    #  - Add alhamduallah, subhanallah, allahu akbar, and shahada count
-    #  - Add tahajjud count
-    #  - Add quran page count
 
     @slash_command(name='hadith', description="Sends a hadith")
     async def hadith(self, ctx, collection: Option(str, "Enter a collection option", choices=collection_names, default="random"), number: int = None):

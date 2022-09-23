@@ -380,23 +380,25 @@ class PrayerTimes(commands.Cog):
                 break
 
         # If the local time is greater than Isha time and isn't midnight yet
-        # TODO: refactor with match statements (if we upgrade to py 3.10)
-        if pnext == "Midnight":
-            pnow = "Isha"
-        elif pnext == "N/A" or pnext == 'Fajr':
-            pnext = "Fajr"
-            pnow = "Midnight"
-        # Otherwise using pnext determine pnow
-        elif pnext == "Sunrise":
-            pnow = "Fajr"
-        elif pnext == "Dhuhr":
-            pnow = "Sunrise"
-        elif pnext == "Asr":
-            pnow = "Dhuhr"
-        elif pnext == "Maghrib":
-            pnow = "Asr"
-        elif pnext == "Isha":
-            pnow = "Maghrib"
+        match pnext:
+            case "Midnight":
+                pnow = "Isha"
+            case "N/A":
+                pnow = "Midnight"
+                pnext = "Fajr"
+            case "Fajr":
+                pnow = "Midnight"
+                pnext = "Fajr"
+            case "Sunrise":
+                pnow = "Fajr"
+            case "Dhuhr":
+                pnow = "Sunrise"
+            case "Asr":
+                pnow = "Dhuhr"
+            case "Maghrib":
+                pnow = "Asr"
+            case "Isha":
+                pnow = "Maghrib"
 
         # Get the prayer time for the next prayer
         p_next_time = datetime.datetime.strptime(prayer_times[pnext], "%H:%M")
