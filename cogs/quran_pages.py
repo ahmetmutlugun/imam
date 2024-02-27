@@ -17,10 +17,7 @@ redis_client = redis.Redis(host='localhost', port=6379)
 
 def set_quran_redis():
     with open(os.getcwd() + '/cogs/data/en_hilali.json', 'r') as f:
-        data = json.load(f)['data']['surahs']
-    for surah in data:
-        for ayah in surah['ayahs']:
-            redis_client.set(str(surah['number']) + "_" + str(ayah['numberInSurah']), ayah['text'])
+        redis_client.json().set("en_hilali", "$", json.load(f))
 
 
 set_quran_redis()
@@ -35,12 +32,12 @@ def create_quran_embed(surah: int, ayah: int):
         The surah number
     ayah: int
         The ayah number of the surah
-    
+
     Raises
     ------
     IndexError:
         Raised if the surah number is invalid or the ayah number
-    
+
     Returns
     -------
     embed: Embed
@@ -54,15 +51,14 @@ def create_quran_embed(surah: int, ayah: int):
 
     try:
         surah_name = data["data"]["surahs"][surah - 1]["englishName"]
-        #text = data["data"]["surahs"][surah - 1]["ayahs"][ayah - 1]["text"]
-        text = redis_client.get(str(surah) + "_" + str(ayah)).decode('utf-8')
+        text = redis_client.json().get("en_hilali", f"$.data.surahs[{surah}].ayahs[{ayah}].text")
     except AttributeError:
         return None
 
     embed = Embed(title=f"Surah {surah_name}", type='rich', color=0x048c28)
     embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                               "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
-    embed.add_field(name="Ayah " + str(ayah), value=text)
+    embed.add_field(name="Ayah " + str(ayah), value=str(text))
 
     return embed
 
@@ -108,7 +104,7 @@ def find_surah_id(surah: str) -> int:
     ---------
     surah : str
         A surah's name
-    
+
     Returns
     -------
     int
@@ -126,7 +122,7 @@ class Quran_Pages(commands.Cog):
 
         Parameter
         ---------
-        client : 
+        client :
             bot client
         """
         self.client = client
@@ -140,7 +136,7 @@ class Quran_Pages(commands.Cog):
 
         Parameters
         ---------
-        ctx : 
+        ctx :
             A context
         surah : str
             A surah of the user's choice

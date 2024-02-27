@@ -56,3 +56,4 @@ config.json
 cogs/data/config.json
 cogs/data/en_hilali.json
 cogs/data/quran_audio.txt
+.DS_Store

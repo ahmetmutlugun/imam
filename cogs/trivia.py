@@ -77,6 +77,7 @@ class Trivia(commands.Cog):
         self.client = client
 
     @slash_command(name='trivia', description="Asks a random islamic trivia question.")
+    @commands.guild_only()
     async def trivia(self, ctx):
         # Create embed
         embed, buttons, correct_answer = create_trivia_embed()

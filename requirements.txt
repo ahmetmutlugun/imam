@@ -4,3 +4,4 @@ redis
 requests
 asyncio
 cryptography
+py-cord

@@ -8,6 +8,7 @@ from discord.ext import commands
 from cogs.dua import Dua
 from cogs.date import Date
 from cogs.prayer import PrayerTimes, auto_delete_users
+# from cogs.quran_cache import set_all_quran_editions
 from cogs.trivia import Trivia
 from cogs.quran_audio import Recite
 from cogs.quran_pages import Quran_Pages
@@ -23,7 +24,6 @@ prefix = "imam "
 
 client = commands.AutoShardedBot(description="A Discord bot with a set of Islamic tools.", status=Status.online,
                                  activity=discord.Game("/help"))
-
 system_random = SystemRandom()
 
 
@@ -34,6 +34,7 @@ async def on_ready():
     logging.info("Bot Ready")
     guilds = await client.fetch_guilds(limit=10000).flatten()
     logging.info(f"Server count: {len(guilds)}")
+    # await set_all_quran_editions()
 
 
 @commands.Cog.listener()
@@ -46,24 +47,6 @@ async def on_member_join(member):
 @client.slash_command(name='ping', description="Displays ping")
 async def ping(ctx):
     await ctx.respond(f"Pong! ({round(client.latency * 1000)}ms)")
-
-
-@client.slash_command(name='profile', description="Sends the profile of a user.")
-async def pp(ctx, member: discord.Member = None):
-    embed = None
-
-    if member is None:
-        embed = discord.Embed(title="Here is your profile picture:", type='rich', color=0x048c28)
-        embed.set_image(url=ctx.author.avatar)
-
-        await ctx.respond(embed=embed)
-    else:
-        embed = discord.Embed(title="Here is the profile picture of " + member.display_name + ":", type='rich',
-                              color=0x048c28)
-        embed.set_image(url=member.avatar)
-
-    set_author_imam(embed)
-    await ctx.respond(embed=embed)
 
 
 @client.slash_command(name='help', description="Shows the latest changes.")
@@ -86,7 +69,7 @@ async def about(ctx):
     embed.add_field(name="Thanks for using Imam!",
                     value="ImamBot was created as a project by two students. You can find more about the project "
                           "at https://github.com/ahmetmutlugun/imam. If you want to support the project, "
-                          "your feedback is more valuable than anything else. You can contact us at imam@sharpie.one "
+                          "your feedback is more valuable than anything else. You can contact us at imam@etka.io "
                           "or leave an issue on GitHub.")
     set_author_imam(embed)
     await ctx.respond(embed=embed)

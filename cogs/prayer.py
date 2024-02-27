@@ -91,7 +91,7 @@ def format_city(city) -> str:
     ---------
     city : str
         Unformatted city name
-    
+
     Returns
     -------
     str :
@@ -174,7 +174,7 @@ def get_local_time_offset(author_id, key) -> int:
     ---------
     author_id :
         user id
-    
+
     Returns
     -------
     utc_offset : int
@@ -360,6 +360,9 @@ class PrayerTimes(commands.Cog):
         # Obtains dictionary from get_prayer_times() and reformats it
         prayer_times = get_prayer_times(city, country)
 
+        if prayer_times is None:
+            await ctx.respond("Failed to get prayer times for your location. Please try setting a new location using /location or try again later.")
+
         # Get the local time in seconds
         local_time = datetime.timedelta(seconds=get_local_time_offset(ctx.author.id, self.config['encrypt_key'])) + datetime.datetime.utcnow()
 
@@ -388,7 +391,6 @@ class PrayerTimes(commands.Cog):
                 pnext = "Fajr"
             case "Fajr":
                 pnow = "Midnight"
-                pnext = "Fajr"
             case "Sunrise":
                 pnow = "Fajr"
             case "Dhuhr":
