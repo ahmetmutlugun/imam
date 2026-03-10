@@ -12,11 +12,11 @@ services:
             - quran_data:/app/cogs/data
 
     redis:
-        image: redis:7-alpine
+        image: redis/redis-stack-server:latest
         volumes:
             - ./config/redis.conf:/redis.conf:ro
             - redis_data:/data
-        command: [ "redis-server", "/redis.conf" ]
+        command: [ "redis-stack-server", "/redis.conf" ]
         restart: unless-stopped
 
 volumes:
