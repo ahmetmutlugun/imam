@@ -1,7 +1,8 @@
-asyncpraw
-PyNaCl
-redis
-requests
-asyncio
-cryptography
-py-cord
+aiohttp>=3.9.0
+asyncpraw==7.8.1
+PyNaCl==1.6.2
+redis==7.3.0
+cryptography==46.0.5
+py-cord==2.7.1
+async-timeout==5.0.1
+python-dotenv>=1.0.0

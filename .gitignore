@@ -2,6 +2,7 @@
 cogs/data/log.log
 # dotenv
 .env
+!.env.example
 .json
 .key
 # virtualenv
@@ -57,3 +58,4 @@ cogs/data/config.json
 cogs/data/en_hilali.json
 cogs/data/quran_audio.txt
 .DS_Store
+.claude/

@@ -15,10 +15,17 @@ from discord.ext import commands, pages
 from discord.commands import slash_command
 import itertools
 import traceback
-from async_timeout import *
+from async_timeout import timeout
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.INFO)
+
+# Cache both data files at startup
+with open(os.getcwd() + '/cogs/data/en_hilali.json', 'r') as _f:
+    _quran_data: dict = json.load(_f)
+
+with open(os.getcwd() + '/cogs/data/quran_audio.txt', 'r') as _f:
+    _audio_index: dict = {item['verse_key']: item['url'] for item in json.load(_f)}
 
 FFMPEG_OPTIONS = {
     'before_options': '-nostdin -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
@@ -113,45 +120,14 @@ class MusicPlayer:
 
 
 def quran_audio_api(surah, ayah):
-    f = open(os.getcwd() + "/cogs/data/quran_audio.txt", "r+")
-
-    data = json.load(f)
-    f.close()
-
-    for key in data:
-        if key['verse_key'] == f"{surah}:{ayah}":
-            return f"https://download.quranicaudio.com/verses/{key['url']}"
-    return
+    url = _audio_index.get(f"{surah}:{ayah}")
+    return f"https://download.quranicaudio.com/verses/{url}" if url else None
 
 
 def create_quran_embed(surah: int, ayah: int) -> discord.Embed:
-    """ Creates an embed for a quran surah and ayah
-
-    Parameters
-    ----------
-    surah : int
-        The surah number
-    ayah: int
-        The ayah number of the surah
-    
-    Raises
-    ------
-    IndexError:
-        Raised if the surah number is invalid or the ayah number
-    
-    Returns
-    -------
-    embed: discord.Embed
-        An embed containing the quran surah and ayah
-
-    """
-    f = open(os.getcwd() + '/cogs/data/en_hilali.json', 'r+')
-    data = json.load(f)
-    f.close()
-
     try:
-        surah_name = data["data"]["surahs"][surah - 1]["englishName"]
-        text = data["data"]["surahs"][surah - 1]["ayahs"][ayah - 1]["text"]
+        surah_name = _quran_data["data"]["surahs"][surah - 1]["englishName"]
+        text = _quran_data["data"]["surahs"][surah - 1]["ayahs"][ayah - 1]["text"]
     except IndexError as e:
         raise e
 
@@ -257,20 +233,12 @@ class Recite(commands.Cog):
         except asyncio.TimeoutError:
             pass
 
-        if surah_and_ayah is not None:
-            counter = 0
-            for i in range(int(first_ayah), int(last_ayah) + 1):
-                counter += 1
-                player = self.get_player(ctx)
-                source = await AudiusSource.create_source(ctx, quran_audio_api(surah, i), loop=self.bot.loop,
-                                                          data_input=f"{surah}:{i}")
-                await player.queue.put(source)
-            if counter == 0:
-                await ctx.respond("Please enter a valid surah/ayah in this format: 1:1-7")
-                return
-            await ctx.respond(f"Added the following to queue: Surah {surah}:{first_ayah} to {surah}:{last_ayah}.")
-        else:
-            await ctx.respond("Please enter a valid surah/ayah in this format: 1:1-7")
+        for i in range(int(first_ayah), int(last_ayah) + 1):
+            player = self.get_player(ctx)
+            source = await AudiusSource.create_source(ctx, quran_audio_api(surah, i), loop=self.bot.loop,
+                                                      data_input=f"{surah}:{i}")
+            await player.queue.put(source)
+        await ctx.respond(f"Added the following to queue: Surah {surah}:{first_ayah} to {surah}:{last_ayah}.")
 
     @slash_command(name='pause', description="pause")
     async def pause(self, ctx):

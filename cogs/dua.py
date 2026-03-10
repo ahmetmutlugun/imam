@@ -1,10 +1,12 @@
+import asyncio
 import json
 import os
 import time
-import requests
 import textwrap
 import logging
 import re
+
+import aiohttp
 
 from random import SystemRandom
 
@@ -17,7 +19,7 @@ system_random = SystemRandom()
 logger = logging.getLogger('discord')
 logger.setLevel(logging.INFO)
 
-collection_names = {
+collection_names = [
     'ahmad',
     'bukhari',
     'muslim',
@@ -33,8 +35,8 @@ collection_names = {
     'mishkat',
     'qudsi40',
     'nawawi40',
-    'hisn'
-}
+    'hisn',
+]
 
 collections_str = "ahmad, bukhari, muslim, tirmidhi, abudawud, nasai, ibnmajah, malik, riyadussalihin, adab, " \
                   "bulugh, shamail, mishkat, qudsi40, nawawi40, hisn "
@@ -87,70 +89,57 @@ class Dua(commands.Cog):
 
     @slash_command(name='hadith', description="Sends a hadith")
     async def hadith(self, ctx, collection: Option(str, "Enter a collection option", choices=collection_names, default="random"), number: int = None):
-        """ Sends a hadith embed to the context from which it was called
-
-        Parameters
-        ---------
-        self : Prayer
-            Prayer object
-        ctx : 
-            The context from which the command was invoked
-        collection : str
-            Specifies what collection to request a hadith from, set to
-            'random' by default 
-        number: int
-            Specifies the hadith number, set to None by default.
-        """
-
-        # If no collection was specified get a random hadith
-        if collection == "random":
-            # Send request to sunnah.com api
-            r = requests.get(url="https://api.sunnah.com/v1/hadiths/random",
-            headers={"X-API-Key": self.config['sunnah']})
-            data = r.json()
-            final_hadith = process_hadith(data)
-            final_wrapped = textwrap.wrap(final_hadith, 1024)
-            final_collection = data["collection"].capitalize()
-            final_number = data["hadithNumber"]
-            final_grade = None
-            if "grade" in data:
-                final_grade = data['hadith'][0]['grade']
-
-        # If the collection name is not in the list of collection_names return a helpful
-        # error message
-        elif collection.lower() not in collection_names:
+        if collection.lower() not in collection_names and collection != "random":
             await ctx.respond(
                 f"Your collection is not supported. Please choose from the following collections: \n {collections_str}")
             return
-
-        # If the number of the hadith is not specified, return a helpful error message
-        elif number is None:
+        if collection != "random" and number is None:
             await ctx.respond(
                 f"Please provide a collection name and number from the following "
                 f"collections: \n {collections_str}\n ")
             return
 
-        # Otherwise try to reach the hadith API 
+        await ctx.defer()
+
+        if collection == "random":
+            url = "https://api.sunnah.com/v1/hadiths/random"
         else:
-            try:
-                r = requests.get(url=f"https://api.sunnah.com/v1/collections/{collection}/hadiths/{number}",
+            url = f"https://api.sunnah.com/v1/collections/{collection}/hadiths/{number}"
 
-                                 headers={"X-API-Key": self.config['sunnah']})
-                data = r.json()
-                # Clean the JSON response
-                final_hadith = process_hadith(data)
-                final_wrapped = textwrap.wrap(final_hadith, 1024)
-                final_collection = collection.capitalize()
-                final_number = data["hadithNumber"]
-                final_grade = None
-                if "grade" in data:
-                    final_grade = data['hadith'][0]['grade']
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, headers={"X-API-Key": self.config['sunnah']},
+                                       timeout=aiohttp.ClientTimeout(total=10)) as r:
+                    if r.status == 404:
+                        await ctx.respond(f"Hadith {collection.capitalize()} {number} not found.")
+                        return
+                    r.raise_for_status()
+                    data = await r.json()
 
-            except Exception:
-                await ctx.respond(
-                    f"Hadith not found. If you are sure {collection.capitalize()} {number} "
-                    f"exists, contact sharpie#0317")
+            if 'hadith' not in data or not data['hadith']:
+                await ctx.respond("Failed to fetch hadith. Please try again.")
                 return
+
+            final_hadith = process_hadith(data)
+            final_wrapped = textwrap.wrap(final_hadith, 1024)
+            final_collection = data["collection"].capitalize() if collection == "random" else collection.capitalize()
+            final_number = data["hadithNumber"]
+            final_grade = data['hadith'][0].get('grade') if 'hadith' in data else None
+
+        except asyncio.TimeoutError:
+            await ctx.respond("Request timed out. The hadith service may be slow. Please try again later.")
+            return
+        except aiohttp.ClientResponseError as e:
+            await ctx.respond(f"Error accessing hadith service (HTTP {e.status}). Please try again later.")
+            return
+        except aiohttp.ClientError as e:
+            logging.error(f"Network error fetching hadith: {e}")
+            await ctx.respond("Network error occurred. Please try again.")
+            return
+        except (KeyError, IndexError, ValueError) as e:
+            logging.error(f"Invalid hadith response format: {e}")
+            await ctx.respond("Invalid response from hadith service. Please try again.")
+            return
 
         # Start a timer and initialize a list of pages
         start = time.time()
@@ -175,7 +164,7 @@ class Dua(commands.Cog):
                 f'O Allah, Bless {user.mention} and his family ',
                 f'O Allah, Grant {user.mention} passage into Paradise ',
                 f'O Allah, Protect {user.mention} from Your Wrath ',
-                f'O Allah, Forgive {user.mention} of his sins '
+                f'O Allah, Forgive {user.mention} of his sins ',
                 f'O Allah, Ease {user.mention} \'s mind '
                 ]
         await ctx.respond(system_random.choice(duas))
@@ -234,7 +223,7 @@ class Dua(commands.Cog):
                  'al-Waarith (The Heir)', 'ar-Rashiyd (The Guide to the Right Path)', 'as-Sabour (The Timeless)'
                  ]
 
-        if number is None:
+        if number == -1:
             response = system_random.choice(names)
         else:
             response = names[number - 1]

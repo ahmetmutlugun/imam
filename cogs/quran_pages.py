@@ -12,15 +12,22 @@ from discord.commands import slash_command
 logger = logging.getLogger('discord')
 logger.setLevel(logging.INFO)
 
-redis_client = redis.Redis(host='localhost', port=6379)
+redis_client = redis.Redis(host=os.environ.get('REDIS_HOST', 'localhost'), port=6379)
+
+# Cache surahs at startup — used by autocomplete on every keystroke
+with open(os.getcwd() + '/cogs/data/surahs.json', 'r') as _f:
+    _surahs: dict = json.load(_f)
 
 
 def set_quran_redis():
-    with open(os.getcwd() + '/cogs/data/en_hilali.json', 'r') as f:
-        redis_client.json().set("en_hilali", "$", json.load(f))
-
-
-set_quran_redis()
+    """Load Quran JSON into Redis if not already present."""
+    if redis_client.exists("en_hilali"):
+        return
+    try:
+        with open(os.getcwd() + '/cogs/data/en_hilali.json', 'r') as f:
+            redis_client.json().set("en_hilali", "$", json.load(f))
+    except Exception as e:
+        logging.error(f"Failed to load Quran data into Redis: {e}")
 
 
 def create_quran_embed(surah: int, ayah: int):
@@ -44,38 +51,26 @@ def create_quran_embed(surah: int, ayah: int):
         An embed containing the quran surah and ayah
 
     """
-    f = open(os.getcwd() + '/cogs/data/en_hilali.json', 'r+')
-
-    data = json.load(f)
-    f.close()
-
     try:
-        surah_name = data["data"]["surahs"][surah - 1]["englishName"]
+        surah_name = redis_client.json().get("en_hilali", f"$.data.surahs[{surah - 1}].englishName")
         text = redis_client.json().get("en_hilali", f"$.data.surahs[{surah}].ayahs[{ayah}].text")
     except AttributeError:
         return None
 
-    embed = Embed(title=f"Surah {surah_name}", type='rich', color=0x048c28)
+    if not surah_name or not text:
+        return None
+
+    embed = Embed(title=f"Surah {surah_name[0]}", type='rich', color=0x048c28)
     embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                               "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
-    embed.add_field(name="Ayah " + str(ayah), value=str(text))
+    embed.add_field(name="Ayah " + str(ayah), value=str(text[0]))
 
     return embed
 
 
 def get_surahs(ctx: discord.AutocompleteContext) -> list:
-    """ Retrieves a list of surahs from the surahs.json file
-
-    Returns
-    -------
-    list :
-        A list of surahs
-    """
-    with open(os.getcwd() + '/cogs/data/surahs.json', "r") as f:
-        data = json.load(f)
-
     matching_items = []
-    for item in list(data.values()):
+    for item in list(_surahs.values()):
         item_list = ctx.value.lower().split(" ")
         failed = False
         for _ in item_list:
@@ -98,34 +93,13 @@ def get_ayah(ctx: discord.AutocompleteContext) -> list:
 
 
 def find_surah_id(surah: str) -> int:
-    """ Finds a given surah's id
-
-    Parameter
-    ---------
-    surah : str
-        A surah's name
-
-    Returns
-    -------
-    int
-        A surah's id
-    """
-    with open(os.getcwd() + '/cogs/data/surahs.json', "r") as f:
-        data = json.load(f)
-
-    return int(list(data.keys())[list(data.values()).index(surah)])
+    return int(list(_surahs.keys())[list(_surahs.values()).index(surah)])
 
 
 class Quran_Pages(commands.Cog):
     def __init__(self, client):
-        """Creates a quran_page cog
-
-        Parameter
-        ---------
-        client :
-            bot client
-        """
         self.client = client
+        set_quran_redis()
 
     @slash_command(name="quran")
     async def quran(self, ctx, surah: Option(str, "Select a surah", autocomplete=get_surahs),
@@ -177,8 +151,9 @@ class Quran_Pages(commands.Cog):
         page_list = []
         # For each ayah create a new embed and append it to the list of pages
         for i in range(start_ayah, end_ayah + 1):
-            if create_quran_embed(surah_id, i) is not None:
-                page_list.append(create_quran_embed(surah_id, i))
+            embed = create_quran_embed(surah_id, i)
+            if embed is not None:
+                page_list.append(embed)
             else:
                 break
         # Create the paginator and then return it

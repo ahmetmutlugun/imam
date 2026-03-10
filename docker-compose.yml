@@ -1,9 +1,23 @@
 version: '3'
 services:
-    redis:
-        image: redis:latest
-        ports:
-            - 6379:6379
+    bot:
+        build: .
+        env_file: .env
+        environment:
+            - REDIS_HOST=redis
+        depends_on:
+            - redis
+        restart: unless-stopped
         volumes:
-            - ./config/redis.conf:/redis.conf
+            - ./cogs/data:/app/cogs/data
+
+    redis:
+        image: redis:7-alpine
+        volumes:
+            - ./config/redis.conf:/redis.conf:ro
+            - redis_data:/data
         command: [ "redis-server", "/redis.conf" ]
+        restart: unless-stopped
+
+volumes:
+    redis_data:

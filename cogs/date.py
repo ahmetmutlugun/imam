@@ -1,10 +1,10 @@
+import aiohttp
 import discord
-import requests
 import datetime
 from discord.commands import slash_command
 from discord.ext import commands
 
-from cogs.prayer import get_local_time_offset
+from cogs.prayer import get_local_datetime
 
 
 class Date(commands.Cog):
@@ -18,12 +18,17 @@ class Date(commands.Cog):
 
     @slash_command(name='hijri',
                    description="Gives the Hijri date for the current date and any holidays that are currently taking place")
-    async def hijri(self, ctx, ):
-        local_time = datetime.timedelta(
-            seconds=get_local_time_offset(ctx.author.id, self.config['encrypt_key'])) + datetime.datetime.utcnow()
+    async def hijri(self, ctx):
+        local_time = get_local_datetime(ctx.author.id, self.config['encrypt_key'])
         local_date = local_time.strftime("%d-%m-%Y")
-        r = requests.get(url=f"http://api.aladhan.com/v1/gToH?date={local_date}")
-        data = r.json()['data']['hijri']
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"https://api.aladhan.com/v1/gToH?date={local_date}") as r:
+                    r.raise_for_status()
+                    data = (await r.json())['data']['hijri']
+        except Exception as e:
+            await ctx.respond("Failed to fetch Hijri date. Please try again later.")
+            return
 
         hijri_day = data['day']
         hijri_month = data['month']['en']

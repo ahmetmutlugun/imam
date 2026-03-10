@@ -1,47 +1,44 @@
-import json
 import logging
-from random import SystemRandom
+import os
+
 import discord
 from discord import Status
 from discord.ext import commands
+from dotenv import load_dotenv
 
 from cogs.dua import Dua
 from cogs.date import Date
-from cogs.prayer import PrayerTimes, auto_delete_users
-# from cogs.quran_cache import set_all_quran_editions
+from cogs.prayer import PrayerTimes
 from cogs.trivia import Trivia
 from cogs.quran_audio import Recite
 from cogs.quran_pages import Quran_Pages
 from cogs.meme import Meme
 
-# Load logger, configs, and  random object
-logging.basicConfig(level=logging.DEBUG)
-f = open('cogs/data/config.json', 'r+')
-config = json.load(f)
-f.close()
+load_dotenv()
+logging.basicConfig(level=logging.INFO)
 
-prefix = "imam "
+config = {
+    'discord':       os.environ['DISCORD_TOKEN'],
+    'reddit':        os.environ['REDDIT_CLIENT_ID'],
+    'redditsecret':  os.environ['REDDIT_CLIENT_SECRET'],
+    'username':      os.environ['REDDIT_USERNAME'],
+    'sunnah':        os.environ['SUNNAH_API_KEY'],
+    'positionstack': os.environ['POSITIONSTACK_API_KEY'],
+    'encrypt_key':   os.environ['ENCRYPT_KEY'],
+}
 
 client = commands.AutoShardedBot(description="A Discord bot with a set of Islamic tools.", status=Status.online,
                                  activity=discord.Game("/help"))
-system_random = SystemRandom()
 
 
 # Case insensitivity can cause performance issues
 @client.event
 async def on_ready():
-    auto_delete_users()
     logging.info("Bot Ready")
-    guilds = await client.fetch_guilds(limit=10000).flatten()
+    guilds = [guild async for guild in client.fetch_guilds(limit=10000)]
     logging.info(f"Server count: {len(guilds)}")
     # await set_all_quran_editions()
 
-
-@commands.Cog.listener()
-async def on_member_join(member):
-    channel = member.guild.system_channel
-    if channel is not None:
-        await channel.respond('As-salamu alaykum {0.mention}.'.format(member))
 
 
 @client.slash_command(name='ping', description="Displays ping")
