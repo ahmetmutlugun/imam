@@ -23,7 +23,8 @@ TOTAL_SURAHS = 114
 def fetch_surah(recitation_id: int, surah: int) -> list:
     params = urllib.parse.urlencode({"per_page": 300})
     url = f"https://api.quran.com/api/v4/recitations/{recitation_id}/by_chapter/{surah}?{params}"
-    with urllib.request.urlopen(url, timeout=15) as r:
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    with urllib.request.urlopen(req, timeout=15) as r:
         return json.loads(r.read())["audio_files"]
 
 
