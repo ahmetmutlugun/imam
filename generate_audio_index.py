@@ -12,7 +12,8 @@ Run with:
 
 import json
 import time
-import requests
+import urllib.request
+import urllib.parse
 
 RECITATION_ID = 7   # Mishari Rashid al-Afasy
 OUTPUT_PATH = "cogs/data/quran_audio.txt"
@@ -20,10 +21,10 @@ TOTAL_SURAHS = 114
 
 
 def fetch_surah(recitation_id: int, surah: int) -> list:
-    url = f"https://api.quran.com/api/v4/recitations/{recitation_id}/by_chapter/{surah}"
-    r = requests.get(url, params={"per_page": 300}, timeout=15)
-    r.raise_for_status()
-    return r.json()["audio_files"]
+    params = urllib.parse.urlencode({"per_page": 300})
+    url = f"https://api.quran.com/api/v4/recitations/{recitation_id}/by_chapter/{surah}?{params}"
+    with urllib.request.urlopen(url, timeout=15) as r:
+        return json.loads(r.read())["audio_files"]
 
 
 def main():

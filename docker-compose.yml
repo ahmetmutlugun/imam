@@ -9,7 +9,7 @@ services:
             - redis
         restart: unless-stopped
         volumes:
-            - ./cogs/data:/app/cogs/data
+            - quran_data:/app/cogs/data
 
     redis:
         image: redis:7-alpine
@@ -21,3 +21,4 @@ services:
 
 volumes:
     redis_data:
+    quran_data:
