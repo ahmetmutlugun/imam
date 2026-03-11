@@ -23,27 +23,51 @@ config = {
     'encrypt_key':   os.environ['ENCRYPT_KEY'],
 }
 
-client = commands.AutoShardedBot(description="A Discord bot with a set of Islamic tools.", status=Status.online,
-                                 activity=discord.Game("/help"))
+
+def set_author_imam(embed: discord.Embed):
+    embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
+                                              "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
 
 
-# Case insensitivity can cause performance issues
+class ImamBot(commands.AutoShardedBot):
+    def __init__(self):
+        intents = discord.Intents.default()
+        intents.voice_states = True
+        super().__init__(
+            command_prefix=commands.when_mentioned,
+            intents=intents,
+            description="A Discord bot with a set of Islamic tools.",
+            status=Status.online,
+            activity=discord.Game("/help"),
+        )
+
+    async def setup_hook(self):
+        await self.add_cog(Dua(self, config))
+        await self.add_cog(Date(self, config))
+        await self.add_cog(PrayerTimes(self, config))
+        await self.add_cog(Recite(self))
+        await self.add_cog(Quran_Pages(self))
+        await self.add_cog(Trivia(self))
+        await self.tree.sync()
+
+
+client = ImamBot()
+
+
 @client.event
 async def on_ready():
     logging.info("Bot Ready")
     guilds = [guild async for guild in client.fetch_guilds(limit=10000)]
     logging.info(f"Server count: {len(guilds)}")
-    # await set_all_quran_editions()
 
 
+@client.tree.command(name='ping', description="Displays ping")
+async def ping(interaction: discord.Interaction):
+    await interaction.response.send_message(f"Pong! ({round(client.latency * 1000)}ms)")
 
-@client.slash_command(name='ping', description="Displays ping")
-async def ping(ctx):
-    await ctx.respond(f"Pong! ({round(client.latency * 1000)}ms)")
 
-
-@client.slash_command(name='help', description="Shows the latest changes.")
-async def help(ctx):
+@client.tree.command(name='help', description="Shows the latest changes.")
+async def help(interaction: discord.Interaction):
     embed = discord.Embed(title="List of /commands", type='rich', color=0x048c28)
     embed.add_field(name="General:", value="ping, help, about")
     embed.add_field(name="Dua:", value="hadith, basmalah, pray, salawat, esma, takbeer, dhikr, salaam")
@@ -52,11 +76,11 @@ async def help(ctx):
     embed.add_field(name="Trivia:", value="trivia")
     embed.add_field(name="Date", value="hijri")
     set_author_imam(embed)
-    await ctx.respond(embed=embed)
+    await interaction.response.send_message(embed=embed)
 
 
-@client.slash_command(name = "about", description = "About the bot and the developers")
-async def about(ctx):
+@client.tree.command(name="about", description="About the bot and the developers")
+async def about(interaction: discord.Interaction):
     embed = discord.Embed(title="About Us", type='rich', color=0x048c28)
     embed.add_field(name="Thanks for using Imam!",
                     value="ImamBot was created as a project by two students. You can find more about the project "
@@ -64,18 +88,7 @@ async def about(ctx):
                           "your feedback is more valuable than anything else. You can contact us at imam@etka.io "
                           "or leave an issue on GitHub.")
     set_author_imam(embed)
-    await ctx.respond(embed=embed)
+    await interaction.response.send_message(embed=embed)
 
 
-def set_author_imam(embed: discord.Embed):
-    embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
-                                              "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
-
-
-client.add_cog(Dua(client, config))
-client.add_cog(Date(client, config))
-client.add_cog(PrayerTimes(client, config))
-client.add_cog(Recite(client))
-client.add_cog(Quran_Pages(client))
-client.add_cog(Trivia(client))
 client.run(config['discord'])

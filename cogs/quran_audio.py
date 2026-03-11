@@ -1,20 +1,12 @@
-# """
-# Based on music.py by EvieePy.
-# https://gist.github.com/EvieePy/ab667b74e9758433b3eb806c53a19f34
-# """
 import asyncio
 import json
 import os
-import sys
 import logging
 import time
 
 import discord
-from discord.ext import commands, pages
-
-from discord.commands import slash_command
-import itertools
-import traceback
+from discord.ext import commands
+from discord import app_commands
 from async_timeout import timeout
 
 logger = logging.getLogger('discord')
@@ -46,7 +38,6 @@ class AudiusSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, requester):
         super().__init__(source)
         self.requester = requester
-
         self.title = data.get('title')
         self.web_url = data.get('webpage_url')
 
@@ -54,35 +45,31 @@ class AudiusSource(discord.PCMVolumeTransformer):
         return self.__getattribute__(item)
 
     @classmethod
-    async def create_source(cls, ctx, search: str, *, loop, data_input=None):
-        # loop = loop or asyncio.get_event_loop()
-        #
-        # to_run = partial(ytdl.extract_info, url=search, download=False)
-        # #data = await loop.run_in_executor(None, to_run)
+    async def create_source(cls, interaction: discord.Interaction, search: str, *, loop, data_input=None):
         data = {
             "title": data_input,
-            "requester": ctx.author
+            "requester": interaction.user
         }
-        return cls(discord.FFmpegPCMAudio(search, **FFMPEG_OPTIONS), data=data, requester=ctx.author)
+        return cls(discord.FFmpegPCMAudio(search, **FFMPEG_OPTIONS), data=data, requester=interaction.user)
 
 
 class MusicPlayer:
     __slots__ = ('bot', '_guild', '_channel', '_cog', 'queue', 'next', 'current', 'np', 'volume')
 
-    def __init__(self, ctx):
-        self.bot = ctx.bot
-        self._guild = ctx.guild
-        self._channel = ctx.channel
-        self._cog = ctx.cog
+    def __init__(self, interaction: discord.Interaction, cog):
+        self.bot = interaction.client
+        self._guild = interaction.guild
+        self._channel = interaction.channel
+        self._cog = cog
 
         self.queue = asyncio.Queue()
         self.next = asyncio.Event()
 
-        self.np = None  # Now playing message
+        self.np = None
         self.volume = .5
         self.current = None
 
-        ctx.bot.loop.create_task(self.player_loop())
+        self.bot.loop.create_task(self.player_loop())
 
     async def player_loop(self):
         await self.bot.wait_until_ready()
@@ -91,8 +78,7 @@ class MusicPlayer:
             self.next.clear()
 
             try:
-                # Wait for the next song. If we timeout cancel the player and disconnect...
-                async with timeout(600):  # 10 minutes...
+                async with timeout(600):
                     source = await self.queue.get()
             except asyncio.TimeoutError:
                 return self.destroy(self._guild)
@@ -102,15 +88,13 @@ class MusicPlayer:
 
             self._guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
             self.np = await self._channel.send(f'**Now Reciting:** {source.title} requested by '
-                                                  f'{source.requester}')
+                                               f'{source.requester}')
             await self.next.wait()
 
-            # Make sure the FFmpeg process is cleaned up.
             source.cleanup()
             self.current = None
 
             try:
-                # We are no longer playing this song...
                 await self.np.delete()
             except discord.HTTPException:
                 pass
@@ -157,60 +141,46 @@ class Recite(commands.Cog):
         except KeyError:
             pass
 
-    async def __local_check(self, ctx):
-        if not ctx.guild:
-            raise commands.NoPrivateMessage
-        return True
-
-    async def __error(self, ctx, error):
-        if isinstance(error, commands.NoPrivateMessage):
-            try:
-                return await ctx.respond('This command can not be used in Private Messages.')
-            except discord.HTTPException:
-                pass
-        elif isinstance(error, InvalidVoiceChannel):
-            await ctx.respond('Error connecting to Voice Channel. '
-                              'Please make sure you are in a valid channel or provide me with one')
-
-        print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
-        traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-
-    def get_player(self, ctx):
+    def get_player(self, interaction: discord.Interaction):
         try:
-            player = self.players[ctx.guild.id]
+            player = self.players[interaction.guild.id]
         except KeyError:
-            player = MusicPlayer(ctx)
-            self.players[ctx.guild.id] = player
-
+            player = MusicPlayer(interaction, self)
+            self.players[interaction.guild.id] = player
         return player
 
-    @slash_command(name='connect', description="Connect")
-    async def connect(self, ctx, *, channel: discord.VoiceChannel = None):
+    @app_commands.command(name='connect', description="Connect to your voice channel")
+    async def connect(self, interaction: discord.Interaction, channel: discord.VoiceChannel = None):
         if not channel:
             try:
-                channel = ctx.author.voice.channel
+                channel = interaction.user.voice.channel
             except AttributeError:
-                raise InvalidVoiceChannel('No channel to join. Please either specify a valid channel or join one.')
+                await interaction.response.send_message(
+                    'No channel to join. Please either specify a valid channel or join one.')
+                return
 
-        vc = ctx.voice_client
+        vc = interaction.guild.voice_client
 
         if vc:
             if vc.channel.id == channel.id:
+                await interaction.response.send_message('Already connected.', delete_after=5)
                 return
             try:
                 await vc.move_to(channel)
             except asyncio.TimeoutError:
-                raise VoiceConnectionError(f'Moving to channel: <{channel}> timed out.')
+                await interaction.response.send_message(f'Moving to channel: <{channel}> timed out.')
+                return
         else:
             try:
                 await channel.connect()
             except asyncio.TimeoutError:
-                raise VoiceConnectionError(f'Connecting to channel: <{channel}> timed out.')
+                await interaction.response.send_message(f'Connecting to channel: <{channel}> timed out.')
+                return
 
-        await ctx.respond(f'Connected to: **{channel}**', delete_after=20)
+        await interaction.response.send_message(f'Connected to: **{channel}**', delete_after=20)
 
-    @slash_command(name='play', description="play")
-    async def play(self, ctx, surah_and_ayah):
+    @app_commands.command(name='play', description="Play Quran audio (format: surah:firstayah-lastayah)")
+    async def play(self, interaction: discord.Interaction, surah_and_ayah: str):
         try:
             array = surah_and_ayah.split(":")
             surah = int(array[0])
@@ -218,215 +188,141 @@ class Recite(commands.Cog):
             first_ayah = int(array2[0])
             last_ayah = int(array2[1])
             if last_ayah - first_ayah > 20:
-                await ctx.respond("You can only request up to 20 ayah.")
+                await interaction.response.send_message("You can only request up to 20 ayah.")
                 return
         except Exception:
-            await ctx.respond("Please enter a valid surah/ayah in this format: Surah:firstayah-lastayah")
+            await interaction.response.send_message(
+                "Please enter a valid surah/ayah in this format: Surah:firstayah-lastayah")
             return
 
-        await ctx.trigger_typing()
-
-        vc = ctx.voice_client
+        await interaction.response.defer()
 
         try:
-            await ctx.author.voice.channel.connect()
-        except asyncio.TimeoutError:
+            await interaction.user.voice.channel.connect()
+        except (asyncio.TimeoutError, discord.ClientException):
             pass
 
         for i in range(int(first_ayah), int(last_ayah) + 1):
-            player = self.get_player(ctx)
-            source = await AudiusSource.create_source(ctx, quran_audio_api(surah, i), loop=self.bot.loop,
+            player = self.get_player(interaction)
+            source = await AudiusSource.create_source(interaction, quran_audio_api(surah, i),
+                                                      loop=self.bot.loop,
                                                       data_input=f"{surah}:{i}")
             await player.queue.put(source)
-        await ctx.respond(f"Added the following to queue: Surah {surah}:{first_ayah} to {surah}:{last_ayah}.")
+        await interaction.followup.send(
+            f"Added the following to queue: Surah {surah}:{first_ayah} to {surah}:{last_ayah}.")
 
-    @slash_command(name='pause', description="pause")
-    async def pause(self, ctx):
-        vc = ctx.voice_client
+    @app_commands.command(name='pause', description="Pause recitation")
+    async def pause(self, interaction: discord.Interaction):
+        vc = interaction.guild.voice_client
 
         if not vc or not vc.is_playing():
-            return await ctx.respond('I am not currently reciting anything!', delete_after=20)
+            return await interaction.response.send_message('I am not currently reciting anything!', delete_after=20)
         elif vc.is_paused():
-            return
+            return await interaction.response.send_message('Already paused.', delete_after=5)
 
         vc.pause()
-        await ctx.respond(f'**`{ctx.author}`**: Paused the song!')
+        await interaction.response.send_message(f'**`{interaction.user}`**: Paused the recitation!')
 
-    @slash_command(name='resume', description="resume")
-    async def resume(self, ctx):
-        vc = ctx.voice_client
+    @app_commands.command(name='resume', description="Resume recitation")
+    async def resume(self, interaction: discord.Interaction):
+        vc = interaction.guild.voice_client
 
         if not vc or not vc.is_connected():
-            return await ctx.respond('I am not currently reciting anything!', delete_after=20)
+            return await interaction.response.send_message('I am not currently reciting anything!', delete_after=20)
         elif not vc.is_paused():
-            return
+            return await interaction.response.send_message('Not paused.', delete_after=5)
 
         vc.resume()
-        await ctx.respond(f'**`{ctx.author}`**: Resumed the song!')
+        await interaction.response.send_message(f'**`{interaction.user}`**: Resumed the recitation!')
 
-    @slash_command(name='skip', description="skip")
-    async def skip(self, ctx):
-        vc = ctx.voice_client
+    @app_commands.command(name='skip', description="Skip the current ayah")
+    async def skip(self, interaction: discord.Interaction):
+        vc = interaction.guild.voice_client
 
         if not vc or not vc.is_connected():
-            return await ctx.respond('I am not currently reciting anything!', delete_after=20)
+            return await interaction.response.send_message('I am not currently reciting anything!', delete_after=20)
 
         if vc.is_paused():
             pass
         elif not vc.is_playing():
-            return
+            return await interaction.response.send_message('Nothing is playing.', delete_after=5)
 
         vc.stop()
-        await ctx.respond(f'**`{ctx.author}`**: Skipped the song!')
+        await interaction.response.send_message(f'**`{interaction.user}`**: Skipped!')
 
-    @slash_command(name='queue', description="queue")
-    async def queue_info(self, ctx):
-        vc = ctx.voice_client
+    @app_commands.command(name='queue', description="Show the current queue")
+    async def queue_info(self, interaction: discord.Interaction):
+        vc = interaction.guild.voice_client
 
         if not vc or not vc.is_connected():
-            return await ctx.respond('I am not currently connected to voice!', delete_after=20)
+            return await interaction.response.send_message('I am not currently connected to voice!', delete_after=20)
 
-        player = self.get_player(ctx)
+        player = self.get_player(interaction)
         if player.queue.empty():
-            return await ctx.respond('There are currently no more queued verses.')
+            return await interaction.response.send_message('There are currently no more queued verses.')
 
+        import itertools
         upcoming = list(itertools.islice(player.queue._queue, 0, 5))
 
         fmt = '\n'.join(f'**`{_["title"]}`**' for _ in upcoming)
         embed = discord.Embed(title=f'Upcoming - Next {len(upcoming)} out of {len(player.queue._queue)} in queue.',
                               description=fmt)
 
-        await ctx.respond(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
-    @slash_command(name='now_reading', description="now_reading")
-    async def now_reading(self, ctx):
-        vc = ctx.voice_client
+    @app_commands.command(name='now_reading', description="Show what is currently being recited")
+    async def now_reading(self, interaction: discord.Interaction):
+        vc = interaction.guild.voice_client
 
         if not vc or not vc.is_connected():
-            return await ctx.respond('I am not currently connected to voice!', delete_after=200)
+            return await interaction.response.send_message('I am not currently connected to voice!', delete_after=200)
 
-        player = self.get_player(ctx)
+        player = self.get_player(interaction)
         if not player.current:
-            return await ctx.respond('I am not currently reciting anything!', delete_after=200)
+            return await interaction.response.send_message('I am not currently reciting anything!', delete_after=200)
 
         try:
-            # Remove our previous now_playing message.
             await player.np.delete()
         except discord.HTTPException:
             pass
 
-        player.np = await ctx.respond(f'**Now Reciting:** `{vc.source.title}` '
-                                      f'requested by `{vc.source.requester}`', delete_after=200)
+        await interaction.response.send_message(f'**Now Reciting:** `{vc.source.title}` '
+                                                f'requested by `{vc.source.requester}`', delete_after=200)
+        player.np = await interaction.original_response()
 
-    @slash_command(name='volume', description="volume")
-    async def change_volume(self, ctx, *, vol: float = 100.0):
-        vc = ctx.voice_client
+    @app_commands.command(name='volume', description="Change the volume")
+    async def change_volume(self, interaction: discord.Interaction, vol: float = 100.0):
+        vc = interaction.guild.voice_client
 
         if not vc or not vc.is_connected():
-            return await ctx.respond('I am not currently connected to voice!', delete_after=20)
+            return await interaction.response.send_message('I am not currently connected to voice!', delete_after=20)
 
         if not 0 < vol < 101:
-            return await ctx.respond('Please enter a value between 1 and 100.')
+            return await interaction.response.send_message('Please enter a value between 1 and 100.')
 
-        player = self.get_player(ctx)
+        player = self.get_player(interaction)
 
         if vc.source:
             vc.source.volume = vol / 100
 
         player.volume = vol / 100
-        await ctx.respond(f'**`{ctx.author}`**: Set the volume to **{vol}%**')
+        await interaction.response.send_message(f'**`{interaction.user}`**: Set the volume to **{vol}%**')
 
-    @slash_command(name='stop', description="stop")
-    async def stop(self, ctx):
-        vc = ctx.voice_client
+    @app_commands.command(name='stop', description="Stop recitation and clear the queue")
+    async def stop(self, interaction: discord.Interaction):
+        vc = interaction.guild.voice_client
 
         if not vc or not vc.is_connected():
-            return await ctx.respond('I am not currently reciting anything!', delete_after=20)
+            return await interaction.response.send_message('I am not currently reciting anything!', delete_after=20)
 
-        await self.cleanup(ctx.guild)
+        await self.cleanup(interaction.guild)
+        await interaction.response.send_message('Stopped.', delete_after=10)
 
-    @slash_command(name='leave', description="leave")
-    async def leave(self, ctx):
+    @app_commands.command(name='leave', description="Disconnect from voice channel")
+    async def leave(self, interaction: discord.Interaction):
         try:
-            vc = ctx.voice_client
+            vc = interaction.guild.voice_client
             await vc.disconnect()
-            await ctx.respond("Sadaqa Allaah al-‘Azeem.", delete_after=20)
+            await interaction.response.send_message("Sadaqa Allaah al-'Azeem.", delete_after=20)
         except Exception:
-            await ctx.respond("I am not currently connected to any channel.", delete_after=20)
-
-    # @slash_command(name="quran")
-    async def quran(self, ctx, surah_and_ayah: str):
-        logger.info("Handling /quran")
-        """ Creates a series of quran embeds for a given surah starting at ayah 1
-
-        Parameters
-        ---------
-        ctx : 
-            A context
-
-        surah_and_ayah : str
-            A string containing a surah and an ayah
-
-        """
-
-        # Retrieve the parameters
-        array = surah_and_ayah.split(":")
-        surah = int(array[0])
-        current_ayah = int(array[1])
-
-        # Try creating an embed, throw an index error if the surah was invalid
-        try:
-            create_quran_embed(surah, current_ayah)
-        except IndexError:
-            await ctx.respond("Could not find that surah/ayah combination. Please let us know is this is en error.")
-            logger.error(f"Could not find that surah/ayah combination for {surah}, {current_ayah}.")
-            return
-
-        # Start a timer and initialize a list of pages
-        start = time.time()
-        page_list = []
-        # For each ayah create a new embed and append it to the list of pages
-        for i in range(1, 286):
-            try:
-                page_list.append(create_quran_embed(surah, i))
-            except IndexError as e:
-                # IndexError is expected
-                break
-        # Create the paginator and then return it
-        paginator = pages.Paginator(pages=page_list)
-
-        class PersistentView(discord.ui.View):
-            def __init__(self, reciter):
-                super().__init__(timeout=None)
-                self.reciter = reciter
-
-            @discord.ui.button(
-                label="Recite",
-                style=discord.ButtonStyle.green,
-                custom_id="persistent_view:recite",
-            )
-            async def recite(self, button: discord.ui.Button, interaction: discord.Interaction,
-                             custom_id="persistent_view:recite"):
-                await interaction.response.send_message(f"Reciting {interaction.message.embeds[0].description}",
-                                                        ephemeral=True)
-                await ctx.send("Loading audio. This may take up to 10 seconds depending on the length.",
-                               delete_after=10)
-                await ctx.trigger_typing()
-                vc = ctx.voice_client
-                if not vc:
-                    await ctx.invoke(self.reciter.connect)
-                # Works up to here... needs testing on docker
-                logging.info(quran_audio_api(surah, current_ayah))
-                player = self.reciter.get_player(ctx)
-                source = await AudiusSource.create_source(ctx, quran_audio_api(surah, current_ayah),
-                                                          loop=self.reciter.bot.loop,
-                                                          data_input=f"{surah}:{current_ayah}")
-                await player.queue.put(source)
-                await ctx.send(
-                    f"Added the following to queue: Surah {surah}:{current_ayah}.")
-
-        view = PersistentView(reciter=self)
-        paginator = pages.Paginator(pages=page_list, custom_view=view)
-        await paginator.respond(ctx.interaction, ephemeral=False)
-
-        logger.info(time.time() - start)
+            await interaction.response.send_message("I am not currently connected to any channel.", delete_after=20)

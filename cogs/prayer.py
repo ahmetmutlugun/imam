@@ -9,7 +9,7 @@ import aiohttp
 import discord
 import redis
 from cryptography.fernet import Fernet
-from discord.commands import slash_command, Option
+from discord import app_commands
 from discord.ext import commands
 
 # Redis client for user data
@@ -95,17 +95,17 @@ def get_local_datetime(author_id, key) -> datetime.datetime:
             datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
 
 
-def get_countries(ctx: discord.AutocompleteContext) -> list:
+async def get_countries(interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
     matching_items = []
     for item in countries:
-        item_list = ctx.value.lower().split(" ")
+        item_list = current.lower().split(" ")
         failed = False
         for _ in item_list:
             if _ not in item.lower():
                 failed = True
         if not failed:
-            matching_items.append(item)
-    return matching_items
+            matching_items.append(app_commands.Choice(name=item, value=item))
+    return matching_items[:25]
 
 
 def format_city(city) -> str:
@@ -170,69 +170,75 @@ class PrayerTimes(commands.Cog):
         self.client = bot
         self.config = config
 
-    @slash_command(name='location', description="Set your location for prayer commands.")
-    async def location(self, ctx, city: discord.Option(str, "Pick a city"),
-                       country: discord.Option(str, "Pick a country", autocomplete=get_countries)):
+    @app_commands.command(name='location', description="Set your location for prayer commands.")
+    @app_commands.describe(city="Pick a city", country="Pick a country")
+    @app_commands.autocomplete(country=get_countries)
+    async def location(self, interaction: discord.Interaction, city: str, country: str):
         if country not in countries:
-            await ctx.respond("Please pick a country from the autocomplete list!")
+            await interaction.response.send_message("Please pick a country from the autocomplete list!")
             return
 
         formatted_city = format_city(city)
         utc_offset, timezone_name = await calc_local_time_offset(formatted_city, countries[country], self.config)
         if utc_offset is None:
-            await ctx.respond("Your location is invalid. Please use \"\\location <City Name> <Country Name>\"")
+            await interaction.response.send_message(
+                "Your location is invalid. Please use \"\\location <City Name> <Country Name>\"")
             return
 
         try:
-            _save_user(self.config['encrypt_key'], ctx.author.id, city, int(utc_offset), country, timezone_name)
+            _save_user(self.config['encrypt_key'], interaction.user.id, city, int(utc_offset), country, timezone_name)
         except Exception as e:
-            logging.error(f"Error saving user location for {ctx.author.id}: {e}")
-            await ctx.respond("An error occurred while saving your location. Please try again later.")
+            logging.error(f"Error saving user location for {interaction.user.id}: {e}")
+            await interaction.response.send_message("An error occurred while saving your location. Please try again later.")
             return
-        await ctx.respond(
+        await interaction.response.send_message(
             "User location changed to: \nCity: " + city + "\nCountry: " + country)
 
-    @slash_command(name="prayer", description="Display a user-specified prayer time")
-    async def prayer(self, ctx, sub_command: Option(str, "Enter a Prayer option",
-                                                    choices=["fajr", "dhuhr", "asr", "maghrib", "isha", "all"])):
-        location = get_location(ctx.author.id, self.config['encrypt_key'])
+    @app_commands.command(name="prayer", description="Display a user-specified prayer time")
+    @app_commands.describe(sub_command="Enter a Prayer option")
+    @app_commands.choices(sub_command=[
+        app_commands.Choice(name=c, value=c) for c in ["fajr", "dhuhr", "asr", "maghrib", "isha", "all"]
+    ])
+    async def prayer(self, interaction: discord.Interaction, sub_command: str):
+        location = get_location(interaction.user.id, self.config['encrypt_key'])
         city = location[0].replace("_", " ")
         country = location[1].replace("_", " ")
         time = await get_prayer_times(city, country)
         if time is None:
-            await ctx.respond(
+            await interaction.response.send_message(
                 "No prayer time found for your location. Please set a new location using imam location <city>")
             return
         if sub_command == "fajr":
-            await ctx.respond("Fajr/Sahur is at " + str(time['Fajr']) + " for " + city)
+            await interaction.response.send_message("Fajr/Sahur is at " + str(time['Fajr']) + " for " + city)
         elif sub_command == "dhuhr":
-            await ctx.respond("Dhuhr is at " + str(time['Dhuhr']) + " for " + city)
+            await interaction.response.send_message("Dhuhr is at " + str(time['Dhuhr']) + " for " + city)
         elif sub_command == "asr":
-            await ctx.respond("Asr is at " + str(time['Asr']) + " for " + city)
+            await interaction.response.send_message("Asr is at " + str(time['Asr']) + " for " + city)
         elif sub_command == "maghrib":
-            await ctx.respond("Maghrib is at " + str(time['Maghrib']) + " for " + city)
+            await interaction.response.send_message("Maghrib is at " + str(time['Maghrib']) + " for " + city)
         elif sub_command == "isha":
-            await ctx.respond("Isha is at " + str(time['Isha']) + " for " + city)
+            await interaction.response.send_message("Isha is at " + str(time['Isha']) + " for " + city)
         elif sub_command == "all":
             embed = discord.Embed(title="Prayer times for " + city + ", " + country, type='rich', color=0x048c28)
             embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                                       "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
             for key in time:
                 embed.add_field(name=str(key) + ":", value=str(time[key]))
-            await ctx.respond(embed=embed)
+            await interaction.response.send_message(embed=embed)
 
-    @slash_command(name='prayer_now', description="Displays the current prayer time.")
-    async def prayer_now(self, ctx):
-        location = get_location(ctx.author.id, self.config['encrypt_key'])
+    @app_commands.command(name='prayer_now', description="Displays the current prayer time.")
+    async def prayer_now(self, interaction: discord.Interaction):
+        location = get_location(interaction.user.id, self.config['encrypt_key'])
         city = location[0].replace("_", " ")
         country = location[1].replace("_", " ")
         prayer_times = await get_prayer_times(city, country)
 
         if prayer_times is None:
-            await ctx.respond("Failed to get prayer times for your location. Please try setting a new location using /location or try again later.")
+            await interaction.response.send_message(
+                "Failed to get prayer times for your location. Please try setting a new location using /location or try again later.")
             return
 
-        local_time = get_local_datetime(ctx.author.id, self.config['encrypt_key'])
+        local_time = get_local_datetime(interaction.user.id, self.config['encrypt_key'])
         formatted_time = datetime.datetime.strptime(local_time.strftime('%H:%M'), "%H:%M")
 
         pnow = ""
@@ -285,5 +291,5 @@ class PrayerTimes(commands.Cog):
             hours = diff.seconds // 3600
             mins = (diff.seconds // 60) % 60
 
-        await ctx.respond(
+        await interaction.response.send_message(
             f"The current prayer for {city} is {pnow}. There are {hours} hours and {mins} minutes until {pnext}.")

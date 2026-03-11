@@ -1,7 +1,7 @@
 import aiohttp
 import discord
 import datetime
-from discord.commands import slash_command
+from discord import app_commands
 from discord.ext import commands
 
 from cogs.prayer import get_local_datetime
@@ -9,25 +9,21 @@ from cogs.prayer import get_local_datetime
 
 class Date(commands.Cog):
     def __init__(self, client, config):
-        """Prayer
-        Create Prayer Cog
-        param: client bot client
-        """
         self.client = client
         self.config = config
 
-    @slash_command(name='hijri',
-                   description="Gives the Hijri date for the current date and any holidays that are currently taking place")
-    async def hijri(self, ctx):
-        local_time = get_local_datetime(ctx.author.id, self.config['encrypt_key'])
+    @app_commands.command(name='hijri',
+                          description="Gives the Hijri date for the current date and any holidays that are currently taking place")
+    async def hijri(self, interaction: discord.Interaction):
+        local_time = get_local_datetime(interaction.user.id, self.config['encrypt_key'])
         local_date = local_time.strftime("%d-%m-%Y")
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(f"https://api.aladhan.com/v1/gToH?date={local_date}") as r:
                     r.raise_for_status()
                     data = (await r.json())['data']['hijri']
-        except Exception as e:
-            await ctx.respond("Failed to fetch Hijri date. Please try again later.")
+        except Exception:
+            await interaction.response.send_message("Failed to fetch Hijri date. Please try again later.")
             return
 
         hijri_day = data['day']
@@ -49,4 +45,4 @@ class Date(commands.Cog):
         if holidays:
             resp += f"It is also {holidays[0]}!"
 
-        await ctx.respond(resp)
+        await interaction.response.send_message(resp)
