@@ -1,6 +1,5 @@
 import requests
 import logging
-import json
 import time
 
 logging.basicConfig(level=logging.DEBUG)
