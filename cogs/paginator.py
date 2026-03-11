@@ -11,11 +11,22 @@ class EmbedPaginator(discord.ui.View):
         self._update_buttons()
 
     def _update_buttons(self):
-        self.prev_button.disabled = self.current == 0
-        self.next_button.disabled = self.current == len(self.pages) - 1
+        at_start = self.current == 0
+        at_end = self.current == len(self.pages) - 1
+        self.first_button.disabled = at_start
+        self.prev_button.disabled = at_start
+        self.next_button.disabled = at_end
+        self.last_button.disabled = at_end
+        self.counter_button.label = f"{self.current + 1}/{len(self.pages)}"
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return interaction.user.id == self.user_id
+
+    @discord.ui.button(label='⏮', style=discord.ButtonStyle.secondary)
+    async def first_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.current = 0
+        self._update_buttons()
+        await interaction.response.edit_message(embed=self.pages[self.current], view=self)
 
     @discord.ui.button(label='◀', style=discord.ButtonStyle.secondary)
     async def prev_button(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -23,9 +34,19 @@ class EmbedPaginator(discord.ui.View):
         self._update_buttons()
         await interaction.response.edit_message(embed=self.pages[self.current], view=self)
 
+    @discord.ui.button(label='1/1', style=discord.ButtonStyle.secondary, disabled=True)
+    async def counter_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        pass
+
     @discord.ui.button(label='▶', style=discord.ButtonStyle.secondary)
     async def next_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.current += 1
+        self._update_buttons()
+        await interaction.response.edit_message(embed=self.pages[self.current], view=self)
+
+    @discord.ui.button(label='⏭', style=discord.ButtonStyle.secondary)
+    async def last_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.current = len(self.pages) - 1
         self._update_buttons()
         await interaction.response.edit_message(embed=self.pages[self.current], view=self)
 

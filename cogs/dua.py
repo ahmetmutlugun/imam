@@ -56,7 +56,7 @@ def create_hadith_embed(number: int, collection: str, hadith: str, page: int, gr
     embed.set_author(name="ImamBot", icon_url="https://ipfs.blockfrost.dev/ipfs"
                                               "/QmbfvtCdRyKasJG9LjfTBaTXAgJv2whPg198vCFAcrgdPQ")
     embed.add_field(name=f"{collection} {number}  Page {page}", value=hadith)
-    embed.add_field(name="Grade", value=grade)
+    embed.add_field(name="Grade", value=grade or "N/A")
     return embed
 
 
@@ -65,24 +65,43 @@ class Dua(commands.Cog):
         self.client = client
         self.config = config
 
-    @app_commands.command(name='hadith', description="Sends a hadith")
-    @app_commands.describe(collection="Enter a collection option", number="Hadith number")
+    @app_commands.command(name='hadith', description="Sends a hadith. Pick a collection, or leave everything blank for a random one.")
+    @app_commands.describe(
+        collection="Hadith collection (leave blank for fully random)",
+        number="Specific hadith number (leave blank for a random one from the collection)"
+    )
     @app_commands.choices(collection=[app_commands.Choice(name=c, value=c) for c in collection_names])
     async def hadith(self, interaction: discord.Interaction, collection: str = "random", number: int = None):
         if collection.lower() not in collection_names and collection != "random":
             await interaction.response.send_message(
                 f"Your collection is not supported. Please choose from the following collections: \n {collections_str}")
             return
-        if collection != "random" and number is None:
-            await interaction.response.send_message(
-                f"Please provide a collection name and number from the following "
-                f"collections: \n {collections_str}\n ")
-            return
 
         await interaction.response.defer()
 
         if collection == "random":
             url = "https://api.sunnah.com/v1/hadiths/random"
+        elif number is None:
+            # Fetch collection metadata to get total hadith count, then pick a random one
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(
+                        f"https://api.sunnah.com/v1/collections/{collection}",
+                        headers={"X-API-Key": self.config['sunnah']},
+                        timeout=aiohttp.ClientTimeout(total=10)
+                    ) as r:
+                        r.raise_for_status()
+                        meta = await r.json()
+                total = meta.get("totalHadith") or meta.get("totalAvailableHadith")
+                if not total:
+                    await interaction.followup.send("Could not determine the size of that collection. Try specifying a number.")
+                    return
+                number = system_random.randint(1, int(total))
+            except Exception as e:
+                logging.error(f"Failed to fetch collection metadata for {collection}: {e}")
+                await interaction.followup.send("Failed to fetch collection info. Please try again.")
+                return
+            url = f"https://api.sunnah.com/v1/collections/{collection}/hadiths/{number}"
         else:
             url = f"https://api.sunnah.com/v1/collections/{collection}/hadiths/{number}"
 

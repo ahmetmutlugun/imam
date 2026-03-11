@@ -1,6 +1,6 @@
 {
   "0": {
-    "question": "When was the Prophet Muhammad PBUH born?",
+    "question": "When was the Prophet Muhammad (PBUH) born?",
     "a": "560 CE",
     "b": "571 CE",
     "c": "580 CE",
@@ -32,7 +32,7 @@
     "correct_answer": "d"
   },
   "4": {
-    "question": "Who is known to be as the 'Men Of The Elephant?",
+    "question": "Who is known to be as the 'Men Of The Elephant'?",
     "a": "Kisra",
     "b": "Abraha",
     "c": "Abdul Muttalib",
@@ -48,7 +48,7 @@
     "correct_answer": "a"
   },
   "6": {
-    "question": "Who served as the Prophet's nursemaid upon his mothers death?",
+    "question": "Who served as the Prophet's nursemaid upon his mother's death?",
     "a": "Umm Salama",
     "b": "Amina",
     "c": "Umm Aiman",
@@ -56,11 +56,11 @@
     "correct_answer": "c"
   },
   "7": {
-    "question": "Which angel came down and cut open the chest of Prophet Muhammad, upon whom be peace, and took out his heart in order to wash it with the water of ZamZam?",
+    "question": "Which angel washed the heart of Prophet Muhammad (PBUH) with the water of Zamzam?",
     "a": "Jibreel Alayhi Salam",
     "b": "Mikhail Alayhi Salam",
     "c": "Israfil Alayhi Salam",
-    "d": "Ridwhan Alayhi Salam",
+    "d": "Ridwan Alayhi Salam",
     "correct_answer": "a"
   },
   "8": {
@@ -76,7 +76,7 @@
     "a": "Abu Bakr As-Siddiq",
     "b": "Umar Ibn Al-Khattab",
     "c": "Uthman ibn Affan",
-    "d": "Ali ibn Abī Ṭalib",
+    "d": "Ali ibn Abi Talib",
     "correct_answer": "b"
   },
   "10": {
@@ -88,20 +88,20 @@
     "correct_answer": "a"
   },
   "11": {
-    "question": "Where is Allah?",
-    "a": "In my heart",
-    "b": "In the heavens",
-    "c": "Above his throne",
-    "d": "Everywhere",
+    "question": "What is the name of the angel who blows the trumpet on the Day of Judgment?",
+    "a": "Jibreel Alayhi Salam",
+    "b": "Mikhail Alayhi Salam",
+    "c": "Israfil Alayhi Salam",
+    "d": "Azrael Alayhi Salam",
     "correct_answer": "c"
   },
   "12": {
-    "question": "What is the meaning of the 'la illaha illallah'?",
-    "a": "There is no god but god",
-    "b": "There is no god but Allah",
-    "c": "There is no real diety other than Allah",
-    "d": "There is none worthy of worship in truth, except Allah.",
-    "correct_answer": "d"
+    "question": "What is the second part of the Shahada after 'La ilaha illallah'?",
+    "a": "Wa Muhammadun Rasulullah",
+    "b": "Wa Aliyun Waliyyullah",
+    "c": "Wa Jibreelu Aminullah",
+    "d": "Wa Quranun Kalamullah",
+    "correct_answer": "a"
   },
   "13": {
     "question": "What does 'Dajjal' mean?",
@@ -110,5 +110,693 @@
     "c": "The chicken",
     "d": "The killer",
     "correct_answer": "a"
+  },
+  "14": {
+    "question": "How many surahs are in the Quran?",
+    "a": "99",
+    "b": "110",
+    "c": "114",
+    "d": "120",
+    "correct_answer": "c"
+  },
+  "15": {
+    "question": "What is the longest surah in the Quran?",
+    "a": "Surah Al-Imran",
+    "b": "Surah Al-Baqarah",
+    "c": "Surah An-Nisa",
+    "d": "Surah Al-Kahf",
+    "correct_answer": "b"
+  },
+  "16": {
+    "question": "What is the shortest surah in the Quran?",
+    "a": "Surah Al-Falaq",
+    "b": "Surah An-Nas",
+    "c": "Surah Al-Kawthar",
+    "d": "Surah Al-Ikhlas",
+    "correct_answer": "c"
+  },
+  "17": {
+    "question": "In which city was the Prophet Muhammad (PBUH) born?",
+    "a": "Madinah",
+    "b": "Makkah",
+    "c": "Taif",
+    "d": "Jerusalem",
+    "correct_answer": "b"
+  },
+  "18": {
+    "question": "How many pillars of Islam are there?",
+    "a": "4",
+    "b": "5",
+    "c": "6",
+    "d": "7",
+    "correct_answer": "b"
+  },
+  "19": {
+    "question": "Which pillar of Islam involves fasting?",
+    "a": "Salah",
+    "b": "Zakat",
+    "c": "Sawm",
+    "d": "Hajj",
+    "correct_answer": "c"
+  },
+  "20": {
+    "question": "How many times a day must a Muslim perform Salah?",
+    "a": "3",
+    "b": "4",
+    "c": "5",
+    "d": "7",
+    "correct_answer": "c"
+  },
+  "21": {
+    "question": "In which month do Muslims fast?",
+    "a": "Dhul Hijjah",
+    "b": "Muharram",
+    "c": "Rajab",
+    "d": "Ramadan",
+    "correct_answer": "d"
+  },
+  "22": {
+    "question": "What is the first surah of the Quran?",
+    "a": "Surah Al-Baqarah",
+    "b": "Surah Al-Fatiha",
+    "c": "Surah Al-Ikhlas",
+    "d": "Surah Al-Kahf",
+    "correct_answer": "b"
+  },
+  "23": {
+    "question": "What is the name of the night the Quran was first revealed?",
+    "a": "Laylat al-Miraj",
+    "b": "Laylat al-Qadr",
+    "c": "Laylat al-Bara'ah",
+    "d": "Laylat al-Isra",
+    "correct_answer": "b"
+  },
+  "24": {
+    "question": "Who was the first Caliph of Islam?",
+    "a": "Umar Ibn Al-Khattab",
+    "b": "Uthman ibn Affan",
+    "c": "Abu Bakr As-Siddiq",
+    "d": "Ali ibn Abi Talib",
+    "correct_answer": "c"
+  },
+  "25": {
+    "question": "Which of the following angels is NOT mentioned by name in the Quran?",
+    "a": "Jibreel",
+    "b": "Mikhail",
+    "c": "Malik",
+    "d": "Israfil",
+    "correct_answer": "d"
+  },
+  "26": {
+    "question": "Which prophet built the Kaaba with his son?",
+    "a": "Nuh Alayhi Salam",
+    "b": "Ibrahim Alayhi Salam",
+    "c": "Musa Alayhi Salam",
+    "d": "Dawud Alayhi Salam",
+    "correct_answer": "b"
+  },
+  "27": {
+    "question": "What is the name of Ibrahim's son who helped build the Kaaba?",
+    "a": "Ishaq Alayhi Salam",
+    "b": "Yusuf Alayhi Salam",
+    "c": "Ismail Alayhi Salam",
+    "d": "Yunus Alayhi Salam",
+    "correct_answer": "c"
+  },
+  "28": {
+    "question": "Which prophet is mentioned the most in the Quran?",
+    "a": "Muhammad (PBUH)",
+    "b": "Ibrahim Alayhi Salam",
+    "c": "Isa Alayhi Salam",
+    "d": "Musa Alayhi Salam",
+    "correct_answer": "d"
+  },
+  "29": {
+    "question": "What does 'Hijra' refer to?",
+    "a": "The pilgrimage to Makkah",
+    "b": "The migration of the Prophet from Makkah to Madinah",
+    "c": "The first revelation of the Quran",
+    "d": "The Battle of Badr",
+    "correct_answer": "b"
+  },
+  "30": {
+    "question": "How many years did the Prophet Muhammad (PBUH) receive revelation?",
+    "a": "15",
+    "b": "20",
+    "c": "23",
+    "d": "30",
+    "correct_answer": "c"
+  },
+  "31": {
+    "question": "Which city is known as the 'City of the Prophet'?",
+    "a": "Makkah",
+    "b": "Jerusalem",
+    "c": "Madinah",
+    "d": "Taif",
+    "correct_answer": "c"
+  },
+  "32": {
+    "question": "What is the Arabic word for God?",
+    "a": "Rabb",
+    "b": "Ilah",
+    "c": "Allah",
+    "d": "Rahman",
+    "correct_answer": "c"
+  },
+  "33": {
+    "question": "How many rakats are in Fajr prayer?",
+    "a": "2",
+    "b": "3",
+    "c": "4",
+    "d": "5",
+    "correct_answer": "a"
+  },
+  "34": {
+    "question": "How many rakats are in Isha prayer?",
+    "a": "2",
+    "b": "3",
+    "c": "4",
+    "d": "5",
+    "correct_answer": "c"
+  },
+  "35": {
+    "question": "What is the minimum amount of Zakat on wealth (nisab) based on gold?",
+    "a": "50 grams",
+    "b": "75 grams",
+    "c": "85 grams",
+    "d": "100 grams",
+    "correct_answer": "c"
+  },
+  "36": {
+    "question": "In which year did the Battle of Badr take place (Hijri)?",
+    "a": "1 AH",
+    "b": "2 AH",
+    "c": "3 AH",
+    "d": "5 AH",
+    "correct_answer": "b"
+  },
+  "37": {
+    "question": "What is the name of the Prophet's wife who was the first to accept Islam?",
+    "a": "Aisha",
+    "b": "Hafsah",
+    "c": "Khadijah",
+    "d": "Umm Salamah",
+    "correct_answer": "c"
+  },
+  "38": {
+    "question": "What is the term for the Night Journey of the Prophet Muhammad (PBUH)?",
+    "a": "Laylat al-Qadr",
+    "b": "Isra wal Miraj",
+    "c": "Al-Hijra",
+    "d": "Al-Fatah",
+    "correct_answer": "b"
+  },
+  "39": {
+    "question": "Which direction do Muslims face when praying?",
+    "a": "East",
+    "b": "West",
+    "c": "Towards Makkah (Qibla)",
+    "d": "North",
+    "correct_answer": "c"
+  },
+  "40": {
+    "question": "What is 'Surah Al-Ikhlas' also known as?",
+    "a": "The Opening",
+    "b": "Sincerity / Purity of Faith",
+    "c": "The Dawn",
+    "d": "The Mankind",
+    "correct_answer": "b"
+  },
+  "41": {
+    "question": "How many prophets are mentioned by name in the Quran?",
+    "a": "15",
+    "b": "20",
+    "c": "25",
+    "d": "30",
+    "correct_answer": "c"
+  },
+  "42": {
+    "question": "Which prophet was thrown into the fire and emerged unharmed?",
+    "a": "Musa Alayhi Salam",
+    "b": "Ibrahim Alayhi Salam",
+    "c": "Isa Alayhi Salam",
+    "d": "Yunus Alayhi Salam",
+    "correct_answer": "b"
+  },
+  "43": {
+    "question": "What is the name of the prayer performed at the time of solar eclipse?",
+    "a": "Salat al-Istikhara",
+    "b": "Salat al-Istisqa",
+    "c": "Salat al-Kusuf",
+    "d": "Salat al-Janazah",
+    "correct_answer": "c"
+  },
+  "44": {
+    "question": "What is the name of the well in Makkah associated with the story of Hajar?",
+    "a": "Kawthar",
+    "b": "Salsabil",
+    "c": "Zamzam",
+    "d": "Tasneem",
+    "correct_answer": "c"
+  },
+  "45": {
+    "question": "Which surah is known as the 'Heart of the Quran'?",
+    "a": "Surah Al-Baqarah",
+    "b": "Surah Al-Fatiha",
+    "c": "Surah Yasin",
+    "d": "Surah Al-Kahf",
+    "correct_answer": "c"
+  },
+  "46": {
+    "question": "Who was the foster mother of the Prophet Muhammad (PBUH)?",
+    "a": "Amina bint Wahb",
+    "b": "Umm Aiman",
+    "c": "Halima As-Sa'diyya",
+    "d": "Fatima bint Asad",
+    "correct_answer": "c"
+  },
+  "47": {
+    "question": "Which surah is recited in every rakat of prayer?",
+    "a": "Surah Al-Ikhlas",
+    "b": "Surah Al-Fatiha",
+    "c": "Surah Al-Baqarah",
+    "d": "Surah Al-Kawthar",
+    "correct_answer": "b"
+  },
+  "48": {
+    "question": "What is the meaning of 'Salam'?",
+    "a": "Mercy",
+    "b": "Peace",
+    "c": "Blessing",
+    "d": "Forgiveness",
+    "correct_answer": "b"
+  },
+  "49": {
+    "question": "What is the ruling on Hajj for a Muslim who is able?",
+    "a": "Sunnah",
+    "b": "Mustahabb",
+    "c": "Fard (obligatory) once in a lifetime",
+    "d": "Fard every year",
+    "correct_answer": "c"
+  },
+  "50": {
+    "question": "Which prophet received the Zabur (Psalms)?",
+    "a": "Musa Alayhi Salam",
+    "b": "Isa Alayhi Salam",
+    "c": "Ibrahim Alayhi Salam",
+    "d": "Dawud Alayhi Salam",
+    "correct_answer": "d"
+  },
+  "51": {
+    "question": "Which prophet received the Injil (Gospel)?",
+    "a": "Isa Alayhi Salam",
+    "b": "Musa Alayhi Salam",
+    "c": "Ibrahim Alayhi Salam",
+    "d": "Sulayman Alayhi Salam",
+    "correct_answer": "a"
+  },
+  "52": {
+    "question": "Which prophet received the Torah?",
+    "a": "Ibrahim Alayhi Salam",
+    "b": "Dawud Alayhi Salam",
+    "c": "Musa Alayhi Salam",
+    "d": "Nuh Alayhi Salam",
+    "correct_answer": "c"
+  },
+  "53": {
+    "question": "What does 'Hijab' literally mean in Arabic?",
+    "a": "Veil",
+    "b": "Covering",
+    "c": "Barrier / partition",
+    "d": "Modesty",
+    "correct_answer": "c"
+  },
+  "54": {
+    "question": "What is the Ayat al-Kursi?",
+    "a": "The last verse of Surah Al-Baqarah",
+    "b": "Surah Al-Baqarah verse 255",
+    "c": "The first verse of Surah Al-Imran",
+    "d": "Surah Al-Fatiha verse 1",
+    "correct_answer": "b"
+  },
+  "55": {
+    "question": "How many times is the word 'Quran' mentioned in the Quran?",
+    "a": "50",
+    "b": "58",
+    "c": "70",
+    "d": "114",
+    "correct_answer": "c"
+  },
+  "56": {
+    "question": "In which cave was the Prophet Muhammad (PBUH) when he received the first revelation?",
+    "a": "Cave of Thawr",
+    "b": "Cave of Hira",
+    "c": "Cave of Uhud",
+    "d": "Cave of Badr",
+    "correct_answer": "b"
+  },
+  "57": {
+    "question": "What does 'Ramadan' mean in Arabic?",
+    "a": "Fasting",
+    "b": "Scorching heat / burning",
+    "c": "Reflection",
+    "d": "Purification",
+    "correct_answer": "b"
+  },
+  "58": {
+    "question": "Who was the last prophet sent by Allah?",
+    "a": "Isa Alayhi Salam",
+    "b": "Ibrahim Alayhi Salam",
+    "c": "Muhammad (PBUH)",
+    "d": "Musa Alayhi Salam",
+    "correct_answer": "c"
+  },
+  "59": {
+    "question": "What is the Islamic term for obligatory charity?",
+    "a": "Sadaqah",
+    "b": "Waqf",
+    "c": "Zakat",
+    "d": "Fidyah",
+    "correct_answer": "c"
+  },
+  "60": {
+    "question": "How many Juz (parts) is the Quran divided into?",
+    "a": "20",
+    "b": "25",
+    "c": "28",
+    "d": "30",
+    "correct_answer": "d"
+  },
+  "61": {
+    "question": "What is the term for the Islamic call to prayer?",
+    "a": "Iqama",
+    "b": "Adhan",
+    "c": "Takbir",
+    "d": "Tasbih",
+    "correct_answer": "b"
+  },
+  "62": {
+    "question": "Which of the following is one of the five daily prayers?",
+    "a": "Salat al-Istikhara",
+    "b": "Salat al-Kusuf",
+    "c": "Salat al-Asr",
+    "d": "Salat al-Eid",
+    "correct_answer": "c"
+  },
+  "63": {
+    "question": "What is the meaning of 'Tawbah'?",
+    "a": "Gratitude",
+    "b": "Patience",
+    "c": "Repentance",
+    "d": "Supplication",
+    "correct_answer": "c"
+  },
+  "64": {
+    "question": "What does 'Subhanallah' mean?",
+    "a": "Thanks be to Allah",
+    "b": "Allah is the greatest",
+    "c": "Glory be to Allah",
+    "d": "May Allah have mercy",
+    "correct_answer": "c"
+  },
+  "65": {
+    "question": "What does 'Alhamdulillah' mean?",
+    "a": "Glory be to Allah",
+    "b": "All praise and thanks be to Allah",
+    "c": "Allah is the greatest",
+    "d": "There is no god but Allah",
+    "correct_answer": "b"
+  },
+  "66": {
+    "question": "What does 'Allahu Akbar' mean?",
+    "a": "Glory be to Allah",
+    "b": "All praise be to Allah",
+    "c": "Allah is sufficient for us",
+    "d": "Allah is the greatest",
+    "correct_answer": "d"
+  },
+  "67": {
+    "question": "What is the name of the bridge over hellfire that all people must cross on the Day of Judgment?",
+    "a": "Sirat",
+    "b": "Mizan",
+    "c": "Barzakh",
+    "d": "Hawdh",
+    "correct_answer": "a"
+  },
+  "68": {
+    "question": "What is 'Barzakh'?",
+    "a": "The Day of Judgment",
+    "b": "The barrier / interval between death and resurrection",
+    "c": "The Hellfire",
+    "d": "The bridge over Hellfire",
+    "correct_answer": "b"
+  },
+  "69": {
+    "question": "How many gates does Jannah (Paradise) have?",
+    "a": "4",
+    "b": "6",
+    "c": "7",
+    "d": "8",
+    "correct_answer": "d"
+  },
+  "70": {
+    "question": "How many gates does Jahannam (Hellfire) have?",
+    "a": "5",
+    "b": "6",
+    "c": "7",
+    "d": "8",
+    "correct_answer": "c"
+  },
+  "71": {
+    "question": "What is the name of the angel who is responsible for paradise?",
+    "a": "Malik",
+    "b": "Ridwan",
+    "c": "Munkar",
+    "d": "Nakir",
+    "correct_answer": "b"
+  },
+  "72": {
+    "question": "What is the name of the angel who is responsible for the hellfire?",
+    "a": "Ridwan",
+    "b": "Azrael",
+    "c": "Malik",
+    "d": "Harut",
+    "correct_answer": "c"
+  },
+  "73": {
+    "question": "Which two angels question the deceased in the grave?",
+    "a": "Jibreel and Mikhail",
+    "b": "Israfil and Azrael",
+    "c": "Munkar and Nakir",
+    "d": "Harut and Marut",
+    "correct_answer": "c"
+  },
+  "74": {
+    "question": "Which prophet is known as 'Khalilullah' (Friend of Allah)?",
+    "a": "Musa Alayhi Salam",
+    "b": "Muhammad (PBUH)",
+    "c": "Ibrahim Alayhi Salam",
+    "d": "Isa Alayhi Salam",
+    "correct_answer": "c"
+  },
+  "75": {
+    "question": "Which prophet is known as 'Kalimullah' (He who spoke to Allah)?",
+    "a": "Ibrahim Alayhi Salam",
+    "b": "Musa Alayhi Salam",
+    "c": "Nuh Alayhi Salam",
+    "d": "Idris Alayhi Salam",
+    "correct_answer": "b"
+  },
+  "76": {
+    "question": "Which prophet built the ark?",
+    "a": "Ibrahim Alayhi Salam",
+    "b": "Idris Alayhi Salam",
+    "c": "Nuh Alayhi Salam",
+    "d": "Hud Alayhi Salam",
+    "correct_answer": "c"
+  },
+  "77": {
+    "question": "Who was the first woman to accept Islam?",
+    "a": "Aisha",
+    "b": "Fatimah",
+    "c": "Maryam",
+    "d": "Khadijah",
+    "correct_answer": "d"
+  },
+  "78": {
+    "question": "What is 'Shirk' in Islam?",
+    "a": "Disbelief in the prophets",
+    "b": "Associating partners with Allah",
+    "c": "Breaking the fast",
+    "d": "Missing a prayer",
+    "correct_answer": "b"
+  },
+  "79": {
+    "question": "What is the term for Islamic jurisprudence?",
+    "a": "Tafsir",
+    "b": "Hadith",
+    "c": "Fiqh",
+    "d": "Aqeedah",
+    "correct_answer": "c"
+  },
+  "80": {
+    "question": "What is the term for the sayings and actions of the Prophet Muhammad (PBUH)?",
+    "a": "Fiqh",
+    "b": "Tafsir",
+    "c": "Sunnah / Hadith",
+    "d": "Ijma",
+    "correct_answer": "c"
+  },
+  "81": {
+    "question": "What is 'Tawhid'?",
+    "a": "The five pillars",
+    "b": "The oneness of Allah",
+    "c": "Islamic law",
+    "d": "The six pillars of faith",
+    "correct_answer": "b"
+  },
+  "82": {
+    "question": "What is the Islamic term for the consensus of scholars?",
+    "a": "Qiyas",
+    "b": "Ijtihad",
+    "c": "Ijma",
+    "d": "Fatwa",
+    "correct_answer": "c"
+  },
+  "83": {
+    "question": "How many years did Nuh (AS) call his people to Islam before the flood?",
+    "a": "100",
+    "b": "500",
+    "c": "950",
+    "d": "1000",
+    "correct_answer": "c"
+  },
+  "84": {
+    "question": "What is the name of the surah that has no Bismillah at its beginning?",
+    "a": "Surah Al-Kahf",
+    "b": "Surah At-Tawbah",
+    "c": "Surah Al-Anfal",
+    "d": "Surah Al-Hajj",
+    "correct_answer": "b"
+  },
+  "85": {
+    "question": "What is the 'Shahada'?",
+    "a": "The act of fasting",
+    "b": "The pilgrimage to Makkah",
+    "c": "The declaration of faith",
+    "d": "The obligatory prayer",
+    "correct_answer": "c"
+  },
+  "86": {
+    "question": "What event is commemorated on Eid al-Adha?",
+    "a": "The end of Ramadan",
+    "b": "The birth of the Prophet (PBUH)",
+    "c": "The willingness of Ibrahim to sacrifice his son",
+    "d": "The migration to Madinah",
+    "correct_answer": "c"
+  },
+  "87": {
+    "question": "Which surah is known as 'The Throne Verse' surah?",
+    "a": "Surah Al-Fatiha",
+    "b": "Surah Al-Baqarah",
+    "c": "Surah Al-Imran",
+    "d": "Surah An-Nisa",
+    "correct_answer": "b"
+  },
+  "88": {
+    "question": "What is the name of the Prophet's (PBUH) grandfather who raised him?",
+    "a": "Abu Talib",
+    "b": "Abdullah",
+    "c": "Abdul Muttalib",
+    "d": "Hashim",
+    "correct_answer": "c"
+  },
+  "89": {
+    "question": "Which prophet was given the ability to speak to animals and control the wind?",
+    "a": "Dawud Alayhi Salam",
+    "b": "Ibrahim Alayhi Salam",
+    "c": "Sulayman Alayhi Salam",
+    "d": "Idris Alayhi Salam",
+    "correct_answer": "c"
+  },
+  "90": {
+    "question": "What is the name of the Prophet's (PBUH) daughter?",
+    "a": "Aisha",
+    "b": "Khadijah",
+    "c": "Maryam",
+    "d": "Fatimah",
+    "correct_answer": "d"
+  },
+  "91": {
+    "question": "What was the name of the Prophet's (PBUH) horse during the Battle of Uhud?",
+    "a": "Al-Buraq",
+    "b": "Duldul",
+    "c": "Sabha",
+    "d": "Qaswa",
+    "correct_answer": "c"
+  },
+  "92": {
+    "question": "Which surah warns about the people who hoard wealth and count it repeatedly?",
+    "a": "Surah Al-Humazah",
+    "b": "Surah Al-Masad",
+    "c": "Surah At-Takathur",
+    "d": "Surah Al-Ma'un",
+    "correct_answer": "a"
+  },
+  "93": {
+    "question": "What is the meaning of 'Inshallah'?",
+    "a": "Praise be to Allah",
+    "b": "If Allah wills",
+    "c": "Allah is sufficient",
+    "d": "May Allah bless you",
+    "correct_answer": "b"
+  },
+  "94": {
+    "question": "What is the Islamic New Year also known as?",
+    "a": "Eid al-Fitr",
+    "b": "Laylat al-Qadr",
+    "c": "Ras as-Sanah al-Hijriyya",
+    "d": "Mawlid an-Nabi",
+    "correct_answer": "c"
+  },
+  "95": {
+    "question": "Which city contains the Masjid al-Aqsa?",
+    "a": "Makkah",
+    "b": "Madinah",
+    "c": "Cairo",
+    "d": "Jerusalem",
+    "correct_answer": "d"
+  },
+  "96": {
+    "question": "What is 'Tawaf'?",
+    "a": "Running between Safa and Marwa",
+    "b": "Circumambulation of the Kaaba",
+    "c": "Standing on the plains of Arafat",
+    "d": "Stoning of the devil",
+    "correct_answer": "b"
+  },
+  "97": {
+    "question": "How many times must Tawaf be performed around the Kaaba?",
+    "a": "3",
+    "b": "5",
+    "c": "7",
+    "d": "9",
+    "correct_answer": "c"
+  },
+  "98": {
+    "question": "What is the name of the act of running between Safa and Marwa during Hajj?",
+    "a": "Tawaf",
+    "b": "Sa'i",
+    "c": "Wuquf",
+    "d": "Rami",
+    "correct_answer": "b"
+  },
+  "99": {
+    "question": "What does 'Masjid' mean?",
+    "a": "Holy city",
+    "b": "Place of prostration",
+    "c": "Prayer mat",
+    "d": "Direction of prayer",
+    "correct_answer": "b"
   }
 }
