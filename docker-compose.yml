@@ -10,6 +10,12 @@ services:
         restart: unless-stopped
         volumes:
             - quran_data:/app/cogs/data
+            - ./logs:/app/logs
+        logging:
+            driver: json-file
+            options:
+                max-size: "10m"
+                max-file: "5"
 
     redis:
         image: redis/redis-stack-server:latest

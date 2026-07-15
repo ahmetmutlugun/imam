@@ -1,7 +1,6 @@
 import asyncio
 import json
 import os
-import time
 import textwrap
 import logging
 import re
@@ -18,8 +17,7 @@ from cogs.paginator import EmbedPaginator
 
 system_random = SystemRandom()
 
-logger = logging.getLogger('discord')
-logger.setLevel(logging.INFO)
+logger = logging.getLogger(__name__)
 
 collection_names = [
     'ahmad',
@@ -140,15 +138,12 @@ class Dua(commands.Cog):
             await interaction.followup.send("Invalid response from hadith service. Please try again.")
             return
 
-        start = time.time()
         page_list = []
         for page, text in enumerate(final_wrapped):
             page_list.append(create_hadith_embed(final_number, final_collection, text, page + 1, final_grade))
 
         paginator = EmbedPaginator(pages=page_list, user_id=interaction.user.id, timeout=3600)
         await paginator.send(interaction, deferred=True)
-
-        logger.info(time.time() - start)
 
     @app_commands.command(name='basmalah', description="Sends a besmele.")
     async def basmalah(self, interaction: discord.Interaction):

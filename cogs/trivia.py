@@ -39,7 +39,11 @@ class TriviaView(View):
     async def on_timeout(self) -> None:
         self.clear_items()
         self.stop()
-        await self.interaction.followup.send(f"Time's up! The answer was: {self.correct_answer}")
+        try:
+            await self.interaction.followup.send(f"Time's up! The answer was: {self.correct_answer}")
+        except discord.HTTPException:
+            # The interaction webhook token may have expired (50027).
+            pass
 
 
 class Trivia(commands.Cog):

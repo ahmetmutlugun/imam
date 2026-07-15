@@ -1,5 +1,6 @@
 .idea/
 cogs/data/log.log
+logs/
 # dotenv
 .env
 !.env.example

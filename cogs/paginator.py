@@ -56,7 +56,9 @@ class EmbedPaginator(discord.ui.View):
         if self.message:
             try:
                 await self.message.edit(view=self)
-            except discord.NotFound:
+            except discord.HTTPException:
+                # The interaction webhook token expires after 15 minutes, so
+                # this edit fails with 50027 once the view outlives the token.
                 pass
 
     async def send(self, interaction: discord.Interaction, deferred: bool = False):

@@ -1,4 +1,5 @@
 import logging
+import logging.handlers
 import os
 
 import discord
@@ -9,12 +10,31 @@ from dotenv import load_dotenv
 from cogs.dua import Dua
 from cogs.date import Date
 from cogs.prayer import PrayerTimes
+from cogs.stats import Stats
 from cogs.trivia import Trivia
 from cogs.quran_audio import Recite
 from cogs.quran_pages import Quran_Pages
 
 load_dotenv()
-logging.basicConfig(level=logging.INFO)
+
+# Console for docker logs, plus a rotating file (survives container recreation
+# via the ./logs bind mount in docker-compose.yml)
+_log_dir = os.environ.get('LOG_DIR', 'logs')
+os.makedirs(_log_dir, exist_ok=True)
+logging.basicConfig(
+    level=os.environ.get('LOG_LEVEL', 'INFO').upper(),
+    format='%(asctime)s %(levelname)-8s %(name)s: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+    handlers=[
+        logging.StreamHandler(),
+        logging.handlers.RotatingFileHandler(
+            os.path.join(_log_dir, 'imam.log'),
+            maxBytes=10 * 1024 * 1024,
+            backupCount=5,
+            encoding='utf-8',
+        ),
+    ],
+)
 
 config = {
     'discord':       os.environ['DISCORD_TOKEN'],
@@ -48,6 +68,7 @@ class ImamBot(commands.AutoShardedBot):
         await self.add_cog(Recite(self))
         await self.add_cog(Quran_Pages(self))
         await self.add_cog(Trivia(self))
+        await self.add_cog(Stats(self))
         await self.tree.sync()
 
 
@@ -69,7 +90,7 @@ async def ping(interaction: discord.Interaction):
 @client.tree.command(name='help', description="Shows the latest changes.")
 async def help(interaction: discord.Interaction):
     embed = discord.Embed(title="List of /commands", type='rich', color=0x048c28)
-    embed.add_field(name="General:", value="ping, help, about")
+    embed.add_field(name="General:", value="ping, help, about, stats")
     embed.add_field(name="Dua:", value="hadith, basmalah, pray, salawat, esma, takbeer, dhikr, salaam")
     embed.add_field(name="Prayer:", value="location, prayer, prayer_now")
     embed.add_field(name="Quran:", value="quran")
@@ -91,4 +112,6 @@ async def about(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed)
 
 
-client.run(config['discord'])
+# log_handler=None: logging is already configured above; discord.py would
+# otherwise install a second handler and every line would print twice
+client.run(config['discord'], log_handler=None)

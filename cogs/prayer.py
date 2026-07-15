@@ -157,7 +157,9 @@ async def calc_local_time_offset(city: str, country, config: dict) -> "tuple[int
         return None, None
 
     except aiohttp.ClientResponseError as e:
-        logging.error(f"API request failed for {city}, {country}: {e}")
+        # Don't log the exception itself: its message includes the full
+        # request URL, which contains the API key.
+        logging.error(f"API request failed for {city}, {country}: HTTP {e.status} {e.message}")
         return None, None
     except (KeyError, IndexError, ValueError) as e:
         logging.error(f"Invalid API response format for {city}, {country}: {e}")

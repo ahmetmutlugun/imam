@@ -8,8 +8,7 @@ from discord.ext import commands
 from discord import app_commands
 from async_timeout import timeout
 
-logger = logging.getLogger('discord')
-logger.setLevel(logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Cache both data files at startup
 with open(os.getcwd() + '/cogs/data/en_hilali.json', 'r') as _f:
@@ -86,17 +85,22 @@ class MusicPlayer:
             self.current = source
 
             self._guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
-            self.np = await self._channel.send(f'**Now Reciting:** {source.title} requested by '
-                                               f'{source.requester}')
+            try:
+                self.np = await self._channel.send(f'**Now Reciting:** {source.title} requested by '
+                                                   f'{source.requester}')
+            except discord.HTTPException:
+                # Missing send permissions shouldn't kill the player loop.
+                self.np = None
             await self.next.wait()
 
             source.cleanup()
             self.current = None
 
-            try:
-                await self.np.delete()
-            except discord.HTTPException:
-                pass
+            if self.np:
+                try:
+                    await self.np.delete()
+                except discord.HTTPException:
+                    pass
 
     def destroy(self, guild):
         return self.bot.loop.create_task(self._cog.cleanup(guild))
@@ -150,11 +154,15 @@ class Recite(commands.Cog):
 
     @app_commands.command(name='connect', description="Connect to your voice channel")
     async def connect(self, interaction: discord.Interaction, channel: discord.VoiceChannel = None):
+        # Connecting to voice can take longer than the 3s allowed for the
+        # initial interaction response, so defer immediately.
+        await interaction.response.defer()
+
         if not channel:
             try:
                 channel = interaction.user.voice.channel
             except AttributeError:
-                await interaction.response.send_message(
+                await interaction.followup.send(
                     'No channel to join. Please either specify a valid channel or join one.')
                 return
 
@@ -162,21 +170,21 @@ class Recite(commands.Cog):
 
         if vc:
             if vc.channel.id == channel.id:
-                await interaction.response.send_message('Already connected.', delete_after=5)
+                await interaction.followup.send('Already connected.', delete_after=5)
                 return
             try:
                 await vc.move_to(channel)
             except asyncio.TimeoutError:
-                await interaction.response.send_message(f'Moving to channel: <{channel}> timed out.')
+                await interaction.followup.send(f'Moving to channel: <{channel}> timed out.')
                 return
         else:
             try:
                 await channel.connect()
             except asyncio.TimeoutError:
-                await interaction.response.send_message(f'Connecting to channel: <{channel}> timed out.')
+                await interaction.followup.send(f'Connecting to channel: <{channel}> timed out.')
                 return
 
-        await interaction.response.send_message(f'Connected to: **{channel}**', delete_after=20)
+        await interaction.followup.send(f'Connected to: **{channel}**', delete_after=20)
 
     @app_commands.command(name='play', description="Play Quran audio (format: surah:firstayah-lastayah)")
     async def play(self, interaction: discord.Interaction, surah_and_ayah: str):

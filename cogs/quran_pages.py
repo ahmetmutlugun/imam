@@ -9,8 +9,7 @@ from discord.ext import commands
 
 from cogs.paginator import EmbedPaginator
 
-logger = logging.getLogger('discord')
-logger.setLevel(logging.INFO)
+logger = logging.getLogger(__name__)
 
 redis_client = redis.Redis(host=os.environ.get('REDIS_HOST', 'localhost'), port=6379)
 
@@ -78,8 +77,6 @@ class Quran_Pages(commands.Cog):
     )
     @app_commands.autocomplete(surah=get_surahs)
     async def quran(self, interaction: discord.Interaction, surah: str, start_ayah: int, end_ayah: int = -1):
-        logger.info("Handling /quran")
-
         if start_ayah == -1:
             start_ayah = 1
             end_ayah = 286
